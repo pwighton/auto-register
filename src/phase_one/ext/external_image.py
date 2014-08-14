@@ -172,19 +172,26 @@ class ExternalImage(object):
         else:
             data = np.array(data).reshape((h.numPixelsRead, h.numPixelsPhase,
                                            h.numSlices))
+            data = np.swapaxes(data, 0, 2)
+
         affine = np.array(h.voxelToWorldMatrix).reshape((4, 4))
         img = nb.Nifti1Image(data, affine)
         img_hdr = img.get_header()
+
+        img_hdr.set_data_dtype('int16')
         img_hdr.set_zooms((h.pixelSpacingReadMM,
                            h.pixelSpacingPhaseMM,
                            h.pixelSpacingSliceMM,
                            ))
         img_hdr.set_xyzt_units('mm', 'msec')
-        img_hdr.set_dim_info()
+        img_hdr.set_qform(affine, code=1)
+        img_hdr.set_sform(affine, code=1)
+
         return img
 
     def process_header(self, in_bytes):
         magic = struct.unpack('4s', in_bytes[:4])[0]
+
         if magic == 'ERTI' or magic == 'SIMU':
             # header
             self.hdr = self.hdr_from_bytes(in_bytes)

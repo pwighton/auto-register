@@ -6,7 +6,16 @@ import threading
 
 class TerminalInput:
 
-    def __init__(self):
+    def __init__(self, disabled):
+
+        self._chars = []
+        self._thread = None
+        self._mutex = threading.Lock()
+        self._should_stop = False
+
+        self._disabled = disabled
+        if self._disabled:
+            return
 
         # setup the terminal for interative character capture
         self._fd = sys.stdin.fileno()
@@ -19,12 +28,10 @@ class TerminalInput:
         self.oldflags = fcntl.fcntl(self._fd, fcntl.F_GETFL)
         fcntl.fcntl(self._fd, fcntl.F_SETFL, self.oldflags | os.O_NONBLOCK)
 
-        self._chars = []
-        self._thread = None
-        self._mutex = threading.Lock()
-        self._should_stop = False
-
     def start(self):
+        if self._disabled:
+            return
+
         self._thread = threading.Thread(target=self.run)
         self._thread.start()
 
@@ -40,6 +47,9 @@ class TerminalInput:
                 pass
 
     def stop(self):
+        if self._disabled:
+            return
+
         self._should_stop = True
         self._thread.join()
         print "Resetting terminal"

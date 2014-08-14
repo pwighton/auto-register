@@ -3,7 +3,6 @@
 import argparse
 import os
 import sys
-import thread
 import traceback
 
 from ext import receive_nii
@@ -19,7 +18,7 @@ class AutoRegister:
         args.single_series = False
 
         self._receiver = receive_nii.ImageReceiver(args)
-        self._term_input = TerminalInput()
+        self._term_input = TerminalInput(disabled=args.no_terminal)
 
         self._receiver.start()
         self._term_input.start()
@@ -31,13 +30,12 @@ class AutoRegister:
 
         if c == 'q':
             self.shutdown()
-
+            return
 
     def run(self):
         print "Running AutoRegister, 'q' to quit"
 
-        while self._receiver.is_running() and not self._should_shutdown:
-            self.check_for_input()
+        while not self._should_shutdown:
 
             filename = self._receiver.get_next_filename()
             if filename is not None:
@@ -45,11 +43,15 @@ class AutoRegister:
 
                 # TODO handle the file
 
+            # must be the last task in the mainloop to handle shutdown properly
+            self.check_for_input()
+
+
     def shutdown(self):
+        print "Shuting down"
         self._should_shutdown = True
         self._term_input.stop()
         self._receiver.stop()
-        print "Shuting down"
 
 def main(args):
     def verifyPathExists(path):
@@ -64,9 +66,12 @@ def main(args):
     parser.add_argument('-H', '--host', default='localhost',
                         help='Address of the scanner from which to listen '
                         'for images [localhost]')
-    parser.add_argument('-p', '--port', default=15001, type=int,
+    parser.add_argument('-p', '--port', default=15000, type=int,
                         help='On the scanner address from which to listen '
-                        'for images [15001]')
+                        'for images [15000]')
+    parser.add_argument('-T', '--no-terminal', action='store_true',
+                        help='Do not listen for terminal input (helpful '
+                        'for debugging)')
 
     ar = AutoRegister(parser.parse_args())
     ar.run()
