@@ -80,13 +80,10 @@ class ImageReceiver(object):
         return self.imagestore
 
     def get_next_filename(self):
-        if not self._is_running:
-            raise RuntimeError('Server is not running')
-
         filename = None
         self._mutex.acquire()
         if len(self._filename_stack) > 0:
-            filename = self._filename_stack.pop(0)
+            filename = self._filename_stack.pop()
         self._mutex.release()
 
         return filename
@@ -150,7 +147,7 @@ class ImageReceiver(object):
                     filename = self.save_nifti(new_ei)
                     self._mutex.acquire()
                     self._filename_stack.append(filename)
-                    self._mutex.acquire()
+                    self._mutex.release()
 
             if hdr.currentTR + 1 == hdr.totalTR:
                 if self.save_4d:
