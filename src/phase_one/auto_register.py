@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
+"""Main file and class for the autoregister application.
+"""
+
 import argparse
 import os
 import sys
 import traceback
 
 from ext import receive_nii
+from registered_image import RegisteredImage
 from util import TerminalInput
 
 class AutoRegister:
@@ -13,13 +17,20 @@ class AutoRegister:
     def __init__(self, args):
         """Initialize the autoregister application and helper modules.
         """
+        # validate args
+        if args.reference is None and not args.first:
+            raise ValueError("One of --reference or --first must be set")
+        elif args.reference is not None and args.first:
+            raise ValueError("Both --reference and --first cannot be set")
+
+        self._reference = args.reference
         self._should_shutdown = False
 
         # unused but required reciever args
         args.four_dimensional = False
         args.single_series = False
-
         self._receiver = receive_nii.ImageReceiver(args)
+
         self._term_input = TerminalInput(disabled=args.no_terminal)
 
     def check_for_input(self):
@@ -46,9 +57,13 @@ class AutoRegister:
 
             filename = self._receiver.get_next_filename()
             if filename is not None:
-                print "saw file %s" % filename
-
-                # TODO handle the file
+                if self._reference is None: # need a reference
+                    self._reference = filename
+                    print "Using reference: %s" % filename
+                else: # register
+                    reg_image = RegisteredImage(self._reference, filename)
+                    if reg_image.register():
+                        print "Registration complete"
 
             # must be the last task in the mainloop to handle shutdown
             # properly
@@ -75,6 +90,12 @@ def main(args):
     parser.add_argument('-s', '--save_directory', type=verifyPathExists,
                         required=True,
                         help='Directory in which to save images and data')
+    parser.add_argument('-r', '--reference', type=verifyPathExists,
+                        help='Path to nifti image to use as the reference '
+                        'image for registration')
+    parser.add_argument('-f', '--first', action="store_true",
+                        help='Take first image received as the reference '
+                        'image for registration')
     parser.add_argument('-H', '--host', default='localhost',
                         help='Address of the scanner from which to listen '
                         'for images [localhost]')

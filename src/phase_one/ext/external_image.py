@@ -196,7 +196,6 @@ class ExternalImage(object):
             # header
             self.hdr = self.hdr_from_bytes(in_bytes)
             h = self.hdr
-            print "header received: TR=%d" % self.hdr.currentTR
             if self.hdr.isMosaic:
                 nrows = int(np.ceil(np.sqrt(h.numSlices)))
                 self.num_bytes = (2 * h.numPixelsRead *
@@ -204,7 +203,6 @@ class ExternalImage(object):
             else:
                 self.num_bytes = (2 * h.numPixelsRead *
                                   h.numPixelsPhase * h.numSlices)
-            print "Requires: %d bytes" % self.num_bytes
             return self.hdr
         else:
             raise ValueError("Unknown magic number %s" % magic)

@@ -69,7 +69,7 @@ class ImageReceiver(object):
         if self.save_4d:
             self.save_imagestore()
 
-        print "image receiver stopped"
+        print "Image receiver stopped"
 
     def start(self):
         self._startserver()
@@ -95,7 +95,7 @@ class ImageReceiver(object):
         server = ThreadedTCPServer((self.host, self.port),
                                    handler_factory(process_data_callback, self))
         ip, port = server.server_address
-        print "image receiver running at %s on port %d" % (ip, port)
+        print "Image receiver running at %s on port %d" % (ip, port)
         # Start a thread with the server -- that thread will then start one
         # more thread for each request
         server_thread = threading.Thread(target=server.serve_forever)
@@ -116,7 +116,6 @@ class ImageReceiver(object):
                 "Header data wrong size: expected %d bytes, got %d" %
                 (self.ei.get_header_size(), len(in_bytes))
                 )
-        print "processing %d header data bytes" % len(in_bytes)
 
         hdr = self.ei.process_header(in_bytes)
 
@@ -136,7 +135,6 @@ class ImageReceiver(object):
                 "Image data wrong size: expected %d bytes, got %d" %
                 (self.ei.get_image_size(), len(img_data))
                 )
-        print "processing %d image data bytes" % len(img_data)
 
         new_ei = self.ei.process_image(img_data)
         if new_ei:
