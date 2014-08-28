@@ -17,6 +17,10 @@ class AutoRegister:
     def __init__(self, args):
         """Initialize the autoregister application and helper modules.
         """
+        # validate environment
+        if not RegisteredImage.check_environment():
+            raise ValueError("Environment check failed")
+
         # validate args
         if args.reference is None and not args.first:
             raise ValueError("One of --reference or --first must be set")
@@ -62,6 +66,7 @@ class AutoRegister:
                     print "Using reference: %s" % filename
                 else: # register
                     reg_image = RegisteredImage(self._reference, filename)
+                    print "Registering %s to the reference" % filename
                     if reg_image.register():
                         print "Registration complete"
 
