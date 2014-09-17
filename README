@@ -17,7 +17,6 @@ git clone git@gitlab/ohinds/auto_register
 cd <path to>/auto_register
 virtualenv aaenv
 source aaenv/bin/activate
-pip install
 pip install git+git://github.com/nipy/nibabel.git
 
 * Run the AutoRegister tool
