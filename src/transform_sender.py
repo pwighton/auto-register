@@ -1,6 +1,7 @@
 """class to transmit an affine transform over a socket.
 """
 
+import re
 import socket
 import struct
 
@@ -8,72 +9,69 @@ class TransformSender:
 
     def __init__(self, host, port):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.connect(host, port)
 
-    def pack754_32(f):
-        return pack754(f, 32, 8)
+        try:
+            self._socket.connect((host, port))
+            self.ready = True
+        except:
+            self.ready = False
+            print "Transform sender failed to connect to address %s:%d" % (
+                host, port)
 
-    def pack754_64(f):
-        return pack754(f, 64, 11)
+    @classmethod
+    def read_transform_file(cls, filename):
+        with open(filename) as f:
+            transform_line_re = re.compile('([0-9.e\-\+]+\s){4}')
+            transform = ''
+            num_consecutive_transform_lines = 0
+            for line in f:
+                if transform_line_re.match(line):
+                    transform += line.strip() + ' '
+                    num_consecutive_transform_lines += 1
+                else:
+                    if num_consecutive_transform_lines == 4:
+                        break
+                    else:
+                        num_consecutive_transform_lines = 0
+                        transform = ''
 
-    def pack754(f, bits, expbits)
-        """Python translation of the code here:
-        http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#serialization
-        """
-        significandbits = bits - expbits - 1
+            # validate
+            if num_consecutive_transform_lines != 4:
+                print "Transform file ended unexpectedly"
+                return ''
 
-        if (f == 0.0) return 0
+            if ([float(s) for s in transform.split()[-4:]] !=
+                [0.0, 0.0, 0.0, 1.0]):
+                print "Transform file parse error"
+                print [float(s) for s in transform.split()[-4:]]
 
-        if f < 0:
-            sign = 1
-            fnorm = -f
-        else:
-            sign = 0
-            fnorm = f
+                return ''
 
-        shift = 0
-        while fnorm >= 2.0:
-            fnorm /= 2.0
-            shift += 1
+        return ' '.join(transform.split()[:-4])
 
-        while fnorm < 1.0:
-            fnorm *= 2.0
-            shift -= 1
+    def send(self, transform_file):
 
-        fnorm = fnorm - 1.0
-
-        significand = fnorm * ((1L<<significandbits) + 0.5f)
-
-        exp = shift + ((1<<(expbits-1)) - 1); // shift + bias
-
-        return (sign<<(bits-1)) | (exp<<(bits-expbits-1)) | significand
-
-    def read_transform_file(filename):
-        # TODO
-        pass
-
-    def pack_transform(transform):
-        transform_bytes = []
-
-        for row in xrange(3):
-            for col in xrange(4):
-                transform_bytes.append(struct.pack('!d', transform[row][col])
-
-        return transform_bytes
-
-    def send(self, transform):
+        if not self.ready:
+            print "Transform sender not ready, can't send."
+            return False
 
         total_sent = 0
 
-        transform_bytes = pack_transform(transform)
-        to_send = len(transform_bytes)
+        transform = TransformSender.read_transform_file(transform_file)
+        if len(transform) == 0:
+            print "No transform to send"
+            return False
+
+        to_send = len(transform)
 
         while total_sent < to_send:
-            sent = self._socket.send(transform_bytes[total_sent:])
+            sent = self._socket.send(transform[total_sent:])
             if sent == 0:
                 print "Socket connection broken"
                 break
 
             total_sent = total_sent + sent
+
+            self._socket.send('\x00')
 
         return total_sent == to_send

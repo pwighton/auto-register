@@ -10,6 +10,7 @@ import traceback
 
 from ext import receive_nii
 from registered_image import RegisteredImage
+from transform_sender import TransformSender
 from util import TerminalInput
 
 class AutoRegister:
@@ -69,6 +70,13 @@ class AutoRegister:
                     print "Registering %s to the reference" % filename
                     if reg_image.register():
                         print "Registration complete"
+
+                        sender = TransformSender('10.1.16.63', 15001)
+                        if sender.ready:
+                            if sender.send('/home/ohinds/tmp/tmp.lta'):
+                                print "Transform sent"
+                            else:
+                                print "Failed to send transform"
 
             # must be the last task in the mainloop to handle shutdown
             # properly
