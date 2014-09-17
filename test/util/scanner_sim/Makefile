@@ -1,3 +1,5 @@
+BASE=/usr/local
+
 CC = g++
 
 CFLAGS = -Wall \
@@ -10,16 +12,16 @@ CDEBUG = -g
 
 COPTIM =
 
-CINC = -I$(HOME)/include \
-       -I$(HOME)/software/include \
+CINC = -I$(BASE)/include \
+       -I$(BASE)/include/nifti \
        -I.
 
 CLIB = \
-      -L$(HOME)/software/lib \
+      -L$(BASE)/lib \
       -lACE \
+      $(BASE)/lib/libniftiio.a \
+      $(BASE)/lib/libznz.a \
       -lz \
-      $(HOME)/software/lib/libniftiio.a \
-      $(HOME)/software/lib/libznz.a \
 
 
 OBJ_DIR = obj
