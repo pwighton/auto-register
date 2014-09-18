@@ -3,52 +3,24 @@
 import argparse
 from collections import namedtuple
 import os
-import socket
 import sys
 from time import sleep
-
 import threading
-import SocketServer
+
+from tcpip_server import ThreadedTCPServer
 
 import external_image
 import nibabel as nb
 import numpy as np
 
-SocketServer.TCPServer.allow_reuse_address = True
-
-class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
-    def __init__(self, callback, infoclient, *args, **keys):
-        self.callback = callback
-        self.infoclient = infoclient
-        SocketServer.BaseRequestHandler.__init__(self, *args, **keys)
-
-    def handle(self):
-        self.callback(self.infoclient, self.request)
-        '''
-        cur_thread = threading.current_thread()
-        response = "{}: {}".format(cur_thread.name, data)
-        self.request.sendall(response)
-        '''
-
-def handler_factory(callback, infoclient):
-    def createHandler(*args, **keys):
-        return ThreadedTCPRequestHandler(callback, infoclient,  *args, **keys)
-    return createHandler
-
-def process_data_callback(infoclient, sock):
-    infoclient.process_data(sock)
-
-class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
-    pass
 
 class ImageReceiver(object):
 
     def __init__(self, args):
         self.host = args.host
         self.port = args.port
-
-        self._is_running = None
         self._server = None
+
         self.imagestore = []
         self.save_location = args.save_directory
         self.current_uid = None
@@ -62,9 +34,9 @@ class ImageReceiver(object):
         self._filename_stack = []
 
     def stop(self):
-        self._server.shutdown()
-        self._is_running = None
-        self._server = None
+        if self._server is not None:
+            self._server.shutdown()
+            self._server = None
 
         if self.save_4d:
             self.save_imagestore()
@@ -75,7 +47,7 @@ class ImageReceiver(object):
         self._startserver()
 
     def check(self):
-        if not self._is_running:
+        if not self._server.is_running():
             raise RuntimeError('Server is not running')
         return self.imagestore
 
@@ -89,24 +61,16 @@ class ImageReceiver(object):
         return filename
 
     def _startserver(self):
-        if self._is_running:
+        if self._server is not None and self._server.is_running():
             raise RuntimeError('Server already running')
 
-        server = ThreadedTCPServer((self.host, self.port),
-                                   handler_factory(process_data_callback, self))
+        server = ThreadedTCPServer((self.host, self.port), self.process_data)
         ip, port = server.server_address
         print "Image receiver running at %s on port %d" % (ip, port)
-        # Start a thread with the server -- that thread will then start one
-        # more thread for each request
-        server_thread = threading.Thread(target=server.serve_forever)
-        # Exit the server thread when the main thread terminates
-        server_thread.daemon = True
-        server_thread.start()
-        self._is_running = True
         self._server = server
 
     def is_running(self):
-        return self._is_running
+        return self._server.is_running()
 
     def process_data(self, sock):
         in_bytes = sock.recv(self.ei.get_header_size())

@@ -2,21 +2,14 @@
 """
 
 import re
-import socket
 import struct
+
+from tcpip_server import ThreadedTCPServer
 
 class TransformSender:
 
-    def __init__(self, host, port):
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        try:
-            self._socket.connect((host, port))
-            self.ready = True
-        except:
-            self.ready = False
-            print "Transform sender failed to connect to address %s:%d" % (
-                host, port)
+    def __init__(self, port):
+        self._port = port
 
     @classmethod
     def read_transform_file(cls, filename):
@@ -48,6 +41,9 @@ class TransformSender:
                 return ''
 
         return ' '.join(transform.split()[:-4])
+
+    def start(self):
+        pass
 
     def send(self, transform_file):
 
