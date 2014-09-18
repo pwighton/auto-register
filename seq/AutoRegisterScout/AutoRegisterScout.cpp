@@ -325,7 +325,7 @@ static bool                    s_bUseSEQRunKernel_ct = false;
     static bool bUseTEBinarySearch = /*true*/ false;     // Disable binary search for TE
                                             // Correct limits have to be calculated by the get-limits handler
 
-    static AffineTransformReceiver transform_receiver(15001);
+    static AffineTransformReceiver transform_receiver("192.168.1.6", 15001);
 
     LINK_LONG_TYPE::PFctSetValue            pOriginalContrastSetFct                 = NULL;
     LINK_LONG_TYPE::PFctSetValue            pOriginalSegmentsSetFct                 = NULL;
@@ -7084,17 +7084,8 @@ NLS_STATUS fSEQInit
     #endif // VXWORKS
 
     #ifndef VXWORKS
-    // Activate the transform receiver (does nothing if it's already listening).
-
-    // Note: for some reason, starting the server on the first call
-    // hangs the whole business. It would be nice to figure out why.
-    static bool first_init = true;
-    if (first_init) {
-      first_init = false;
-    }
-    else {
-      transform_receiver.startListening();
-    }
+    // prep for receiving transforms
+    transform_receiver.initNetwork();
     #endif
 
     return(lStatus);
@@ -7649,7 +7640,7 @@ NLS_STATUS fSEQPrep
     }
 
 
-    if (transform_receiver.getHasTransform()) {
+    if (transform_receiver.checkForTransform()) {
       pMrProt->sliceSeries().atPos(0).rotationAngle(
           transform_receiver.getTransformMatrixEl(0, 0));
 
@@ -9164,8 +9155,6 @@ NLS_STATUS fSEQRun
 )
 
 {
-  transform_receiver.stopListening();
-
   static const char *ptModule = {"fSEQRun"};
   NLS_STATUS lStatus          = SEQU__NORMAL;
 
