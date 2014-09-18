@@ -8,7 +8,7 @@ import os
 import sys
 import traceback
 
-from ext import receive_nii
+from image_receiver import ImageReceiver
 from registered_image import RegisteredImage
 from transform_sender import TransformSender
 from util import TerminalInput
@@ -34,7 +34,7 @@ class AutoRegister:
         # unused but required reciever args
         args.four_dimensional = False
         args.single_series = False
-        self._receiver = receive_nii.ImageReceiver(args)
+        self._receiver = ImageReceiver(args)
 
         self._term_input = TerminalInput(disabled=args.no_terminal)
 
