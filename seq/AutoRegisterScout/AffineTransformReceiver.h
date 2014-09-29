@@ -24,13 +24,16 @@ class AffineTransformReceiver {
   // check whether a new transform is available.
   bool checkForTransform();
 
-  // retrieve a single affine matrix element at [r,c]
-  double getTransformMatrixEl(int r, int c) const;
+  // retrieve a single affine matrix element at [r,c].
+  // no bounds checking or validation is performed.
+  double getTransformMatrixEl(int r, int c) const {
+    return matrix[r][c];
+  }
 
  private:
 
   // setup the transform matrix based on a string of doubles.
-  bool setTransformFromString(const std::string&);
+  bool setTransformFromString(const char *);
 
   bool ready_for_network;
 

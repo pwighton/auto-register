@@ -325,7 +325,7 @@ static bool                    s_bUseSEQRunKernel_ct = false;
     static bool bUseTEBinarySearch = /*true*/ false;     // Disable binary search for TE
                                             // Correct limits have to be calculated by the get-limits handler
 
-    static AffineTransformReceiver transform_receiver("192.168.1.6", 15001);
+    static AffineTransformReceiver transform_receiver("10.1.13.170", 15001);
 
     LINK_LONG_TYPE::PFctSetValue            pOriginalContrastSetFct                 = NULL;
     LINK_LONG_TYPE::PFctSetValue            pOriginalSegmentsSetFct                 = NULL;
@@ -7639,10 +7639,9 @@ NLS_STATUS fSEQPrep
         }
     }
 
-
-    if (transform_receiver.checkForTransform()) {
+    if (pSeqLim->isContextNormal() && transform_receiver.checkForTransform()) {
       pMrProt->sliceSeries().atPos(0).rotationAngle(
-          transform_receiver.getTransformMatrixEl(0, 0));
+        transform_receiver.getTransformMatrixEl(0, 0));
 
       TRACE_PUT4(TC_ALWAYS, TF_SEQ, "%g %g %g %g",
                  transform_receiver.getTransformMatrixEl(0, 0),
@@ -7663,20 +7662,20 @@ NLS_STATUS fSEQPrep
                  transform_receiver.getTransformMatrixEl(2, 3)
                  );
     }
-    TRACE_PUT1(TC_ALWAYS, TF_SEQ, "slice 0 angle: %g", pMrProt->sliceSeries().begin()->rotationAngle());
-
 
     // * ---------------------------------------------------------------------- *
     // * Calculate the rotation matrices and offsets for slices                 *
     // * ---------------------------------------------------------------------- *
     CheckStatusPB(lStatus = fSUPrepSlicePosArray (pMrProt, pSeqLim, asSLC),"fSUPrepSlicePosArray");
 
-    for (indi = 0; indi < 3; indi++) {
-      for (indj = 0; indj < 3; indj++) {
-        TRACE_PUT3(TC_ALWAYS, TF_SEQ, "m_sROT_MATRIX[%d][%d] = %f", indi, indj, asSLC[0].m_sROT_MATRIX.dMat[indi][indj]);
+    if (false) {
+      for (indi = 0; indi < 3; indi++) {
+        for (indj = 0; indj < 3; indj++) {
+          TRACE_PUT3(TC_ALWAYS, TF_SEQ, "m_sROT_MATRIX[%d][%d] = %f", indi, indj, asSLC[0].m_sROT_MATRIX.dMat[indi][indj]);
+        }
       }
+      //TRACE_PUT1(TC_ALWAYS, TF_SEQ, "slice array 0 angle: %g", pMrProt->sliceSeries().atPos(0).rotationAngle());
     }
-    //TRACE_PUT1(TC_ALWAYS, TF_SEQ, "slice array 0 angle: %g", pMrProt->sliceSeries().atPos(0).rotationAngle());
 
 
     // * ---------------------------------------------------------------------- *

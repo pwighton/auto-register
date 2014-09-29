@@ -48,20 +48,36 @@ bool AffineTransformReceiver::checkForTransform() {
     }
   }
 
+  hostent *host_info = NULL;
+  if (isalpha(host[0])) {
+    host_info = gethostbyname(host.c_str());
+  }
+  else  {
+    unsigned int addr = inet_addr(host.c_str());
+    host_info = gethostbyaddr((char *) &addr, 4, AF_INET);
+  }
+
+  if (host_info == NULL) {
+    TRACE_PUT0(TC_ALWAYS, TF_SEQ, "Error resolving host");
+  }
+
   sockaddr_in remote;
-  remote.sin_family = AF_INET;
-  remote.sin_addr.s_addr = inet_addr(host.c_str());
+  memset(&remote, 0, sizeof(remote));
+  memcpy(&(remote.sin_addr), host_info->h_addr, host_info->h_length);
+  remote.sin_family = host_info->h_addrtype;
   remote.sin_port = htons(port_number);
 
   SOCKET transform_socket = socket(AF_INET, SOCK_STREAM, 0);
   if (transform_socket == INVALID_SOCKET){
+    TRACE_PUT0(TC_ALWAYS, TF_SEQ, "Error allocating socket");
     return false;
   }
 
   TRACE_PUT0(TC_ALWAYS, TF_SEQ, "Checking for transform");
 
-  if (connect(transform_socket, (SOCKADDR*) &remote, sizeof(remote) ==
-              SOCKET_ERROR)) {
+  if (connect(transform_socket, (SOCKADDR*) &remote, sizeof(remote)) ==
+              SOCKET_ERROR) {
+    TRACE_PUT0(TC_ALWAYS, TF_SEQ, "Failed to connect to server.");
     return false;
   }
 
@@ -78,30 +94,19 @@ bool AffineTransformReceiver::checkForTransform() {
   const string NO_TRANSFORM_MESSAGE("none");
   char buffer[MAX_TRANSFORM_BYTES];
 
-  int num_bytes = 0;
-  bool success = false;
-  for (; num_bytes < MAX_TRANSFORM_BYTES; num_bytes++) {
-    int received = recv(msg_sock, buffer + num_bytes, 1, 0);
+  int received = recv(transform_socket, buffer, MAX_TRANSFORM_BYTES, 0);
 
-    if (received != 1) {
-      TRACE_PUT1(TC_ALWAYS, TF_SEQ, "Error receiving on the socket, code: %d",
-                 received);
-      return false;
-    }
-
-    if (*(buffer + num_bytes) == '\0') {
-      success = true;
-      break;
-    }
-  }
-
-  if (!success && num_bytes == MAX_TRANSFORM_BYTES) {
-    TRACE_PUT0(TC_ALWAYS, TF_SEQ,
-               "Error: transform data too long or data corruption.");
+  if (received <= 0) {
+    TRACE_PUT1(TC_ALWAYS, TF_SEQ,
+               "Error receiving on the socket, code: ", received);
     return false;
   }
-  else if (!success) {
-    TRACE_PUT0(TC_ALWAYS, TF_SEQ, "Unknown error receiving transform.");
+
+  TRACE_PUT1(TC_ALWAYS, TF_SEQ, "Response: %s.", buffer);
+
+  if (received == MAX_TRANSFORM_BYTES) {
+    TRACE_PUT0(TC_ALWAYS, TF_SEQ,
+               "Error: transform data too long or data corruption.");
     return false;
   }
   else if (NO_TRANSFORM_MESSAGE == buffer) {
@@ -112,9 +117,9 @@ bool AffineTransformReceiver::checkForTransform() {
   return true;
 }
 
-bool AffineTransformReceiver::setTransformFromString(const string &str) {
+bool AffineTransformReceiver::setTransformFromString(const char *str) {
 
-  TRACE_PUT1(TC_ALWAYS, TF_SEQ, "%s", string);
+  TRACE_PUT1(TC_ALWAYS, TF_SEQ, "%s", str);
 
   int start = 0;
   int end = 0;
