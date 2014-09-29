@@ -6,10 +6,12 @@ import struct
 
 from tcpip_server import ThreadedTCPServer
 
-class TransformSender:
+class TransformSender(object):
 
     def __init__(self, port):
         self._port = port
+        self._server = None
+        self._transforms_to_send = []
 
     @classmethod
     def read_transform_file(cls, filename):
@@ -43,12 +45,18 @@ class TransformSender:
         return ' '.join(transform.split()[:-4])
 
     def start(self):
-        pass
+        if self._server is not None and self._server.is_running():
+            raise RuntimeError('Server already running')
+
+        server = ThreadedTCPServer(("10.1.13.170", self._port), self.process_data)
+        ip, port = server.server_address
+        print "Transform sender running at %s on port %d" % (ip, port)
+        self._server = server
 
     def send(self, transform_file):
 
-        if not self.ready:
-            print "Transform sender not ready, can't send."
+        if not self._server.is_running():
+            print "Transform sender not running, can't send."
             return False
 
         total_sent = 0
@@ -58,16 +66,45 @@ class TransformSender:
             print "No transform to send"
             return False
 
-        to_send = len(transform)
+        self._transforms_to_send.append(transform)
 
-        while total_sent < to_send:
-            sent = self._socket.send(transform[total_sent:])
-            if sent == 0:
-                print "Socket connection broken"
-                break
+        return True
 
-            total_sent = total_sent + sent
+    def process_data(self, sock):
+        in_bytes = sock.recv(4096)
 
-            self._socket.send('\x00')
+        print in_bytes
 
-        return total_sent == to_send
+        def send_string(data):
+            chars_to_send = len(data)
+
+            sent = 0
+            while sent < chars_to_send:
+                sent_now = sock.send(data[sent:])
+                if sent_now <= 0:
+                    return False
+
+                sent += sent_now
+            print "sent response: %s" % data
+
+            return True
+
+
+        if in_bytes != "ping":
+            send_string("unrecognized request %s" % in_bytes)
+            return
+
+        if len(self._transforms_to_send) == 0:
+            send_string("none\0")
+            return
+
+        transform = self._transforms_to_send.pop()
+        if not send_string(transform + "\0"):
+            print "Error sending transform"
+        else:
+            print "Transmitted transform string"
+
+    def stop(self):
+        if self._server is not None:
+            self._server.shutdown()
+            self._server = None

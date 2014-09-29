@@ -4,7 +4,7 @@ import sys
 import termios
 import threading
 
-class TerminalInput:
+class TerminalInput(object):
 
     def __init__(self, disabled):
 

@@ -13,7 +13,7 @@ from registered_image import RegisteredImage
 from transform_sender import TransformSender
 from util import TerminalInput
 
-class AutoRegister:
+class AutoRegister(object):
 
     def __init__(self, args):
         """Initialize the autoregister application and helper modules.
@@ -34,7 +34,9 @@ class AutoRegister:
         # unused but required reciever args
         args.four_dimensional = False
         args.single_series = False
-        self._receiver = ImageReceiver(args)
+        self._image_receiver = ImageReceiver(args)
+
+        self._transform_sender = TransformSender(15001)
 
         self._term_input = TerminalInput(disabled=args.no_terminal)
 
@@ -53,14 +55,15 @@ class AutoRegister:
     def run(self):
         """Main loop of the autoregister application.
         """
-        self._receiver.start()
+        self._image_receiver.start()
+        self._transform_sender.start()
         self._term_input.start()
 
         print "Running AutoRegister, 'q' to quit"
 
         while not self._should_shutdown:
 
-            filename = self._receiver.get_next_filename()
+            filename = self._image_receiver.get_next_filename()
             if filename is not None:
                 if self._reference is None: # need a reference
                     self._reference = filename
@@ -71,12 +74,12 @@ class AutoRegister:
                     if reg_image.register():
                         print "Registration complete"
 
-                        sender = TransformSender('10.1.16.63', 15001)
-                        if sender.ready:
-                            if sender.send('/home/ohinds/tmp/tmp.lta'):
-                                print "Transform sent"
-                            else:
-                                print "Failed to send transform"
+                        # TODO: send the right file
+                        if self._transform_sender.send(
+                                '/home/ohinds/tmp/tmp.lta'):
+                            print "Transform sent"
+                        else:
+                            print "Failed to send transform"
 
             # must be the last task in the mainloop to handle shutdown
             # properly
@@ -90,17 +93,23 @@ class AutoRegister:
         print "Shuting down"
         self._should_shutdown = True
         self._term_input.stop()
-        self._receiver.stop()
+        self._image_receiver.stop()
+        self._transform_sender.stop()
 
 def main(args):
     def verifyPathExists(path):
+        if not os.path.exists(path):
+            raise ValueError("%s does not exist" % path)
+        return path
+
+    def verifyDirExists(path):
         if not os.path.isdir(path):
             raise ValueError("%s does not exist" % path)
         return path
 
     # parse args
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--save_directory', type=verifyPathExists,
+    parser.add_argument('-s', '--save_directory', type=verifyDirExists,
                         required=True,
                         help='Directory in which to save images and data')
     parser.add_argument('-r', '--reference', type=verifyPathExists,
