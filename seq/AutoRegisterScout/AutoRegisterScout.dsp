@@ -7,18 +7,18 @@
 CFG=AutoRegisterScout - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "AutoRegisterScout.mak".
-!MESSAGE 
+!MESSAGE
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "AutoRegisterScout.mak" CFG="AutoRegisterScout - Win32 Debug"
-!MESSAGE 
+!MESSAGE
 !MESSAGE Possible choices for configuration are:
-!MESSAGE 
+!MESSAGE
 !MESSAGE "AutoRegisterScout - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE 
+!MESSAGE
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
@@ -91,7 +91,15 @@ SOURCE=..\Kernels\SBBReadOut.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\AffineTransformReceiver.cpp
+SOURCE=..\..\AutoRegisterApply\AutoRegisterApply.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\AutoRegisterApply\mgh_isometry\MGH_AffineTransform.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\AutoRegisterApply\mgh_isometry\MGH_Quaternion.cpp
 # End Source File
 
 # End Group
@@ -112,7 +120,15 @@ SOURCE=..\common\iPAT\iPAT.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\AffineTransformReceiver.h
+SOURCE=..\..\AutoRegisterApply\AutoRegisterApply.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\AutoRegisterApply\mgh_isometry\MGH_AffineTransform.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\AutoRegisterApply\mgh_isometry\MGH_Quaternion.h
 # End Source File
 
 # Begin Source File

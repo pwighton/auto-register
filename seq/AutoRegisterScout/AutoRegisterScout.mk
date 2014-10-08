@@ -38,7 +38,7 @@ LIB_NAME    = AutoRegisterScout
 #************************************************************************
 
 
-# alternative valid notation: 
+# alternative valid notation:
 # SOURCES  = file1.cpp
 # SOURCES += file2.cpp
 # SOURCES += ../multipleUsed.cpp
@@ -48,9 +48,11 @@ SOURCES += ${IDEA_BASE}/n4/pkg/MrServers/MrImaging/seq/AutoRegisterScout/SBBPhas
 SOURCES += ${IDEA_BASE}/n4/pkg/MrServers/MrImaging/seq/AutoRegisterScout/LocalSeqLoop.cpp
 SOURCES += ${IDEA_BASE}/n4/pkg/MrServers/MrImaging/seq/AutoRegisterScout/AutoRegisterScout.cpp
 SOURCES += ${IDEA_BASE}/n4/pkg/MrServers/MrImaging/seq/AutoRegisterScout/iPAT.cpp
-SOURCES += ${IDEA_BASE}/n4/pkg/MrServers/MrImaging/seq/AutoRegisterScout/AffineTransformReceiver.cpp
 SOURCES += ${IDEA_BASE}/n4/pkg/MrServers/MrImaging/seq/AutoRegisterScout/../common/CT/CT.cpp
 SOURCES += ${IDEA_BASE}/n4/pkg/MrServers/MrImaging/seq/AutoRegisterScout/../common/CT/CT_UI.cpp
+SOURCES += ${IDEA_BASE}/n4/pkg/MrServers/MrImaging/seq/AutoRegisterApply/AutoRegisterApply.cpp
+SOURCES += ${IDEA_BASE}/n4/pkg/MrServers/MrImaging/seq/AutoRegisterApply/mgh_isometry/MGH_AffineTransform.cpp
+SOURCES += ${IDEA_BASE}/n4/pkg/MrServers/MrImaging/seq/AutoRegisterApply/mgh_isometry/MGH_Quaternion.cpp
 
 #************************************************************************
 # Target specific CPPFLAGS
@@ -94,5 +96,3 @@ LDLIBS += libPACE.lib
 
 
 include $(IDEA_BASE)/n4/pkg/MrApplications/MrIDEA/utils/MakeSeq.mk
-
-

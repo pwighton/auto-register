@@ -43,7 +43,9 @@ CPPSOURCES (SBBPhaseEncode)
 CPPSOURCES (LocalSeqLoop)
 CPPSOURCES (AutoRegisterScout)
 CPPSOURCES (iPAT)
-CPPSOURCES (AffineTransformReceiver)
+CPPSOURCES (..\AutoRegisterApply\AutoRegisterApply)
+CPPSOURCES (..\AutoRegisterApply\mgh_isometry\MGH_AffineTransform)
+CPPSOURCES (..\AutoRegisterApply\mgh_isometry\MGH_Quaternion)
 
 ## sources needed, if SUPPORT_CT is defined
 CPPSOURCESFROM (CT,../common/CT)
@@ -54,7 +56,7 @@ CPPSOURCESFROM (CT_UI,../common/CT)
 
 ##-----------------------------------------------------------------------------
 ## enter link libraries
-##    
+##
 LDLIBS (libUILink)
 LDLIBS (MrProt)
 LDLIBS (Sequence)
