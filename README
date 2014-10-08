@@ -10,7 +10,7 @@ ACE, nifticlib-2.0.0 (for the vsend testing tool)
 
 * Clone the repo (from inside the NMR center, after you have been
 granted access)
-git clone git@gitlab/ohinds/auto_register
+git clone git@gitlab:ohinds/auto_register
 
 * Setup the python environment
 
