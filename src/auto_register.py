@@ -76,7 +76,7 @@ class AutoRegister(object):
 
                         # TODO: send the right file
                         if self._transform_sender.send(
-                                '/home/ohinds/tmp/tmp.lta'):
+                                reg_image.get_transform_filename()):
                             print "Transform sent"
                         else:
                             print "Failed to send transform"

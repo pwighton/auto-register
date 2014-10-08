@@ -38,13 +38,21 @@ class RegisteredImage:
         self._robust_reg_options = ['--satit',
                                     '--iscale']
 
+        self._transform_file = None
+
+    def get_transform_filename(self):
+        return self._transform_file
+
     def register(self):
 
         out_stem = self._movable.split('.')[0]
+
+        self._transform_file = out_stem + '.lta'
+
         cmd = [self._reg_prog,
                '--mov', self._movable,
                '--dst', self._reference,
-               '--lta', out_stem + '.lta',
+               '--lta', self._transform_file,
                '--mapmov', out_stem + '_map.nii.gz',
                '--weights', out_stem + '_weights.nii.gz',
               ] + self._robust_reg_options
