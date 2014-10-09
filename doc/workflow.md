@@ -37,11 +37,31 @@ the AutoRegisterScout sends image volumes to the registration laptop.
 
 ## Setup
 
+### Preliminary
+
+1. Clone the repo git@gitlab:ohinds/auto_register
+1. Clone the repo git@gitlab:pwighton/vsend
+
 ### Scanner host
 
 #### Building the pulse sequences
 
-TODO
+* AutoRegisterScout
+
+1. Copy the directory seq/AutoRegisterScout from the auto\_register
+repository to ${IDEA_BASE}/n4/pkg/MrServers/MrImaging/seq/
+1. In the Siemens IDEA sde, change to the AutoRegisterScout sequence:
+cs AutoRegisterScout
+1. Issue the 'make sequence' command
+ms
+
+* Diagnostic sequence
+
+1. Copy the directory seq/AutoRegisterApply from the auto\_register
+repository to ${IDEA_BASE}/n4/pkg/MrServers/MrImaging/seq/
+1. Follow the directions at the top of
+AutoRegisterApply/AutoRegisterApply.h to use the transform application
+tools inside the diagnostic sequence.
 
 #### Installing sequences on the host
 
@@ -59,15 +79,11 @@ TODO
 host console.
 1. Set the IP of the laptop to 192.168.TODO.TODO.
 
-### Image registration machine
+### Image reconstruction machine
 
-#### Building the ICE program
+#### Building and installing the ICE program
 
-TODO
-
-#### Installing the ICE program
-
-TODO
+* Follow the instructions in the Readme.txt file in the vsend repository.
 
 ## Execution ##
 
