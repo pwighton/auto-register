@@ -7634,7 +7634,7 @@ NLS_STATUS fSEQPrep
 
     // check for a received transform
     if (pSeqLim->isContextNormal()) {
-      AutoRegisterApply applicator("192.168.1.9", 15001);
+      AutoRegisterApply applicator("10.0.2.93", 15001);
       if (applicator.applyToProtocol(pMrProt)) {
         TRACE_PUT0(TC_ALWAYS, TF_SEQ, "Protocol modified to reflect Auto Register transform");
 
@@ -7647,16 +7647,6 @@ NLS_STATUS fSEQPrep
     // * Calculate the rotation matrices and offsets for slices                 *
     // * ---------------------------------------------------------------------- *
     CheckStatusPB(lStatus = fSUPrepSlicePosArray (pMrProt, pSeqLim, asSLC),"fSUPrepSlicePosArray");
-
-    // DEBUGGING
-    if (false) {
-      for (indi = 0; indi < 3; indi++) {
-        for (indj = 0; indj < 3; indj++) {
-          TRACE_PUT3(TC_ALWAYS, TF_SEQ, "m_sROT_MATRIX[%d][%d] = %f", indi, indj, asSLC[0].m_sROT_MATRIX.dMat[indi][indj]);
-        }
-      }
-    }
-
 
     // * ---------------------------------------------------------------------- *
     // * Calculates the reordering scheme, lines/partitions to measure and the  *
