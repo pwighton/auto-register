@@ -74,12 +74,11 @@ class AutoRegister(object):
                     if reg_image.register():
                         print "Registration complete"
 
-                        # TODO: send the right file
                         if self._transform_sender.send(
                                 reg_image.get_transform_filename()):
-                            print "Transform sent"
+                            print "Transform ready to send"
                         else:
-                            print "Failed to send transform"
+                            print "Failed to prepare transform for sending"
 
             # must be the last task in the mainloop to handle shutdown
             # properly
