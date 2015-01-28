@@ -48,7 +48,7 @@ class TransformSender(object):
         if self._server is not None and self._server.is_running():
             raise RuntimeError('Server already running')
 
-        server = ThreadedTCPServer(("10.1.13.170", self._port), self.process_data)
+        server = ThreadedTCPServer(("10.0.2.93", self._port), self.process_data)
         ip, port = server.server_address
         print "Transform sender running at %s on port %d" % (ip, port)
         self._server = server
@@ -73,8 +73,6 @@ class TransformSender(object):
     def process_data(self, sock):
         in_bytes = sock.recv(4096)
 
-        print in_bytes
-
         def send_string(data):
             chars_to_send = len(data)
 
@@ -85,10 +83,7 @@ class TransformSender(object):
                     return False
 
                 sent += sent_now
-            print "sent response: %s" % data
-
             return True
-
 
         if in_bytes != "ping":
             send_string("unrecognized request %s" % in_bytes)
