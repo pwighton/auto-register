@@ -96,6 +96,19 @@ void AffineTransform::toAxisAngle(double* angle, double* x, double* y, double* z
   Quaternion::fromRotationMatrix(rot_matrix).toAxisAngle(angle, x, y, z);
 }
 
+AffineTransform AffineTransform::fromAxisAngleAndTranslation(double angle, double x, double y, double z, double tx, double ty, double tz) {
+  Quaternion quat = Quaternion::fromAxisAngle(angle, x, y, z);
+  double rot_matrix[3][3];
+  quat.toRotationMatrix(rot_matrix);
+
+  double trans[3];
+  trans[0] = tx;
+  trans[1] = ty;
+  trans[2] = tz;
+
+  return AffineTransform(rot_matrix, trans);
+}
+
 std::ostream& operator<<(std::ostream& ost, const AffineTransform& toOut) {
     ost << toOut.matrix[0][0] << " | " << toOut.matrix[0][1] << " | " << toOut.matrix[0][2] << " | " << toOut.matrix[0][3] << std::endl;
     ost << toOut.matrix[1][0] << " | " << toOut.matrix[1][1] << " | " << toOut.matrix[1][2] << " | " << toOut.matrix[1][3] << std::endl;

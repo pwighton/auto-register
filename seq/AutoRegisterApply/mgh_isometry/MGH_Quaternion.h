@@ -18,8 +18,10 @@ namespace LIB_NAMESPACE {
 			Quaternion conjugate() const;
 
 			void toAxisAngle(double *radians, double *x, double *y, double *z);
+			static Quaternion fromAxisAngle(double radians, double x, double y, double z);
 			void toRotationMatrix(double rotMatrix[3][3]);
 			static Quaternion fromRotationMatrix(const double matrix[3][3]);
+
 
 			friend std::ostream& operator<<(std::ostream& ost, const Quaternion& toOut);
 

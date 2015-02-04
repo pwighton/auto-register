@@ -19,7 +19,6 @@ namespace {
 
 const string DEFAULT_HOST = "192.168.1.2";
 const int DEFAULT_PORT = 15001;
-const double PI = 3.141592653589793238462643383279502884197169399375105820974;
 
 // Local class to support retreiving transform data from an external
 // computer. Each time checkForTransform() is called, a TCP/IP
@@ -30,7 +29,18 @@ class AffineTransformReceiver {
   AffineTransformReceiver(const std::string &host, int port_number)
     : host(host)
     , port_number(port_number)
-    {}
+    {
+      for (int r = 0; r < 4; r++) {
+        for (int c = 0; c < 4; c++) {
+          if (r == c) {
+            transform.matrix[r][c] = 1.0;
+          }
+          else {
+            transform.matrix[r][c] = 0.0;
+          }
+        }
+      }
+    }
 
   ~AffineTransformReceiver() {}
 
@@ -185,43 +195,55 @@ bool AutoRegisterApply::applyToProtocol(MrProt *pMrProt) const {
     return false;
   }
 
+  bool debug = true;
+  ofstream f;
+  if (debug) {
+    f.open("c:/Temp/autoregister_apply_log.txt", ofstream::app | ofstream::out);
+    f << "=================================================" << endl;
+    f << time(NULL) << endl;
+  }
+
   // apply the transform to the protocol
 
-  // set the axis angle
+  // make an affine matrix out of the current protocol info
+  LIB_NAMESPACE::AffineTransform orig =
+    LIB_NAMESPACE::AffineTransform::fromAxisAngleAndTranslation(
+      pMrProt->sliceGroupList()[0].rotationAngle(),
+      pMrProt->sliceGroupList()[0].normal().dSag,
+      pMrProt->sliceGroupList()[0].normal().dCor,
+      pMrProt->sliceGroupList()[0].normal().dTra,
+      pMrProt->sliceGroupList()[0].position().dSag,
+      pMrProt->sliceGroupList()[0].position().dCor,
+      pMrProt->sliceGroupList()[0].position().dTra);
+
+  LIB_NAMESPACE::AffineTransform modified = receiver.getTransformMatrix() * orig;
+
+  if (debug) {
+    f << "orig:" << endl << orig << endl;
+    f << "received:" << endl << receiver.getTransformMatrix() << endl;
+    f << "modified:" << endl << modified << endl;
+    f.close();
+  }
+
   double angle, nx, ny, nz;
-  receiver.getTransformMatrix().toAxisAngle(&angle, &nx, &ny, &nz);
+  modified.toAxisAngle(&angle, &nx, &ny, &nz);
 
   // set the normal
   VectorPat<double> norm;
   norm.dSag = nx;
   norm.dCor = ny;
   norm.dTra = nz;
-
-  TRACE_PUT3(TC_ALWAYS, TF_SEQ, "adding (%g, %g, %g) to normal", nx, ny, nz);
-
-  norm += pMrProt->sliceGroupList()[0].normal();
-  norm.normalize();
   pMrProt->sliceGroupList()[0].normal(norm);
 
   // set the rotation angle
-  TRACE_PUT1(TC_ALWAYS, TF_SEQ, "adding (%g) to the angle", angle);
-
-  angle += pMrProt->sliceGroupList()[0].rotationAngle();
-  while (angle > 2 * PI) {
-    angle -= 2 * PI;
-  }
   pMrProt->sliceGroupList()[0].rotationAngle(angle);
 
   // set the position
   VectorPat<double> pos;
-  pos.dSag = receiver.getTransformMatrixEl(0, 3);
-  pos.dCor = receiver.getTransformMatrixEl(1, 3);
-  pos.dTra = receiver.getTransformMatrixEl(2, 3);
-
-  TRACE_PUT3(TC_ALWAYS, TF_SEQ, "adding (%g, %g, %g) to pos", pos.dSag, pos.dCor, pos.dTra);
-
-  pMrProt->sliceGroupList()[0].position(
-    pMrProt->sliceGroupList()[0].position() + pos);
+  pos.dSag = modified.matrix[0][3];
+  pos.dCor = modified.matrix[1][3];
+  pos.dTra = modified.matrix[2][3];
+  pMrProt->sliceGroupList()[0].position(pos);
 
   return true;
 }
