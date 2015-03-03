@@ -16,6 +16,7 @@ namespace LIB_NAMESPACE {
 			AffineTransform inverse() const;
 
 			void toAxisAngle(double *radians, double *x, double *y, double *z) const;
+			static AffineTransform fromAxisAngleAndTranslation(double radians, double x, double y, double z, double tx, double ty, double tz);
 			friend std::ostream& operator<<(std::ostream& ost, const AffineTransform& toOut);
 
 			double matrix[4][4];

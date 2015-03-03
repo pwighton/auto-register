@@ -7633,15 +7633,16 @@ NLS_STATUS fSEQPrep
     }
 
     // check for a received transform
+    #ifndef VXWORKS
     if (pSeqLim->isContextNormal()) {
-      AutoRegisterApply applicator("10.0.2.93", 15001);
+      AutoRegisterApply applicator("192.168.1.11", 15001);
       if (applicator.applyToProtocol(pMrProt)) {
         TRACE_PUT0(TC_ALWAYS, TF_SEQ, "Protocol modified to reflect Auto Register transform");
 
         // TODO validate correctness
       }
     }
-
+    #endif
 
     // * ---------------------------------------------------------------------- *
     // * Calculate the rotation matrices and offsets for slices                 *

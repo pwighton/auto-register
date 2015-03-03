@@ -63,7 +63,11 @@ repository:
 
 ##### Diagnostic sequence
 
-TODO
+* Copy the directory seq/AutoRegisterApply from the auto\_register
+  repository to ${IDEA_BASE}/n4/pkg/MrServers/MrImaging/seq/
+* Follow the directions at the top of
+  AutoRegisterApply/AutoRegisterApply.h to use the transform application
+  tools inside the diagnostic sequence.
 
 ### Preparing the auto_register.py execution environment on the registration laptop
 

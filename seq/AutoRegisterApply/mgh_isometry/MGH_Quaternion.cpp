@@ -47,6 +47,14 @@ void Quaternion::toAxisAngle(double *radians, double *axisX, double *axisY, doub
 	while(*radians < - Quaternion::pi) *radians += pix2;
 }
 
+Quaternion Quaternion::fromAxisAngle(double radians, double ax, double ay, double az) {
+  double w = cos(radians / 2);
+  double x = ax * sin(radians / 2);
+  double y = ay * sin(radians / 2);
+  double z = az * sin(radians / 2);
+  return Quaternion(w, x, y, z);
+}
+
 void Quaternion::toRotationMatrix(double rotMatrix[3][3]) {
 	double wSq = w * w;
 	double xSq = x * x;
