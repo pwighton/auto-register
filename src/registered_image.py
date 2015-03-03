@@ -45,7 +45,7 @@ class RegisteredImage:
 
     def register(self):
 
-        out_stem = self._movable.split('.')[0]
+        out_stem = '.'.join(self._movable.split('.')[:-1])
 
         self._transform_file = out_stem + '.lta'
 

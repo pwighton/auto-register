@@ -48,7 +48,7 @@ class TransformSender(object):
         if self._server is not None and self._server.is_running():
             raise RuntimeError('Server already running')
 
-        server = ThreadedTCPServer(("10.0.2.93", self._port), self.process_data)
+        server = ThreadedTCPServer(("192.168.2.5", self._port), self.process_data)
         ip, port = server.server_address
         print "Transform sender running at %s on port %d" % (ip, port)
         self._server = server

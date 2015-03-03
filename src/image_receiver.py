@@ -95,10 +95,12 @@ class ImageReceiver(object):
             img_data += in_bytes
 
         if len(img_data) != self.ei.get_image_size():
-            raise ValueError(
-                "Image data wrong size: expected %d bytes, got %d" %
-                (self.ei.get_image_size(), len(img_data))
-                )
+            if len(img_data) - 8 == self.ei.get_image_size():
+                print "seeing byte error, FIXME"
+                img_data = img_data[:-8]
+            else:
+                raise ValueError("Image data wrong size: expected %d bytes, got %d" %
+                    (self.ei.get_image_size(), len(img_data)))
 
         new_ei = self.ei.process_image(img_data)
         if new_ei:

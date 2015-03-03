@@ -32,6 +32,7 @@ class AutoRegister(object):
         self._should_shutdown = False
 
         # unused but required reciever args
+        args.host = '192.168.2.5'
         args.four_dimensional = False
         args.single_series = False
         self._image_receiver = ImageReceiver(args)
