@@ -32,12 +32,11 @@ class AutoRegister(object):
         self._should_shutdown = False
 
         # unused but required reciever args
-        args.host = '192.168.2.5'
         args.four_dimensional = False
         args.single_series = False
         self._image_receiver = ImageReceiver(args)
 
-        self._transform_sender = TransformSender(15001)
+        self._transform_sender = TransformSender(args.host, 15001)
 
         self._term_input = TerminalInput(disabled=args.no_terminal)
 
@@ -118,7 +117,7 @@ def main(args):
     parser.add_argument('-f', '--first', action="store_true",
                         help='Take first image received as the reference '
                         'image for registration')
-    parser.add_argument('-H', '--host', default='localhost',
+    parser.add_argument('-H', '--host', default='192.168.2.5',
                         help='Address of the scanner from which to listen '
                         'for images [localhost]')
     parser.add_argument('-p', '--port', default=15000, type=int,

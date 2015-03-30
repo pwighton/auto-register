@@ -8,7 +8,8 @@ from tcpip_server import ThreadedTCPServer
 
 class TransformSender(object):
 
-    def __init__(self, port):
+    def __init__(self, host, port):
+        self._host = host
         self._port = port
         self._server = None
         self._transforms_to_send = []
@@ -48,7 +49,7 @@ class TransformSender(object):
         if self._server is not None and self._server.is_running():
             raise RuntimeError('Server already running')
 
-        server = ThreadedTCPServer(("192.168.2.5", self._port), self.process_data)
+        server = ThreadedTCPServer((self._host, self._port), self.process_data)
         ip, port = server.server_address
         print "Transform sender running at %s on port %d" % (ip, port)
         self._server = server
