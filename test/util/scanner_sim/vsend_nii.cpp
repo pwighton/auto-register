@@ -25,8 +25,8 @@ const int DEFAULT_PORT = 15000;
 
 class VSendNifti {
  public:
-  VSendNifti()
-    : address(DEFAULT_PORT) // localhost testing only
+  VSendNifti(const string &host)
+    : address(DEFAULT_PORT, host.c_str())
     , image(NULL) {}
 
   bool init(const string &nifti_filename) {
@@ -145,9 +145,14 @@ int ACE_TMAIN (int argc, ACE_TCHAR *argv[]) {
     return 1;
   }
 
-  VSendNifti sender;
+  string host = "";
+  if (argc >= 3) {
+    host = argv[2];
+  }
+
+  VSendNifti sender(host);
   if (!sender.init(argv[1])) {
-    cerr << "usage: " << argv[0] << " niftifile " << endl;
+    cerr << "usage: " << argv[0] << " niftifile [host]" << endl;
     return 1;
   }
 
