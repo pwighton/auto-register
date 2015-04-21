@@ -24,6 +24,7 @@ class ImageReceiver(object):
         self.imagestore = []
         self.save_location = args.save_directory
         self.current_uid = None
+        self.current_uid_index = 0
         self.current_series_hdr = None
         self.save_4d = args.four_dimensional
         self.stop_after_one_series = args.single_series
@@ -87,6 +88,7 @@ class ImageReceiver(object):
         if self.current_uid != hdr.seriesUID:
             assert hdr.currentTR == 1
             self.current_uid = hdr.seriesUID
+            self.current_uid_index += 1
             self.current_series_hdr = hdr
 
         img_data = ""

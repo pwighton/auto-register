@@ -74,8 +74,7 @@ class AutoRegister(object):
                     if reg_image.register():
                         print "Registration complete"
 
-                        if self._transform_sender.send(
-                                reg_image.get_transform_filename()):
+                        if self._transform_sender.send(reg_image.get_transform()):
                             print "Transform ready to send"
                         else:
                             print "Failed to prepare transform for sending"
