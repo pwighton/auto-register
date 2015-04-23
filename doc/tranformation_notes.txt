@@ -1,0 +1,8 @@
+- A reference scan exists with affine transformation A_r. (A_r
+  transforms an axis-oriented and centered image of the object into
+  the reference scan).
+- A subsequent scan is taken of the same object, potentially at a
+  different position and orientation than the reference scan. Call the
+  associated affine transformation A_s.
+- Our goal is to acquire aligned subsequent scans such that the
+  associated affine transformation A_a == A_r.
