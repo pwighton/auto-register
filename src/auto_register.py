@@ -36,7 +36,8 @@ class AutoRegister(object):
         args.single_series = False
         self._image_receiver = ImageReceiver(args)
 
-        self._transform_sender = TransformSender(args.host, 15001)
+        self._transform_sender = TransformSender(args.host, 15001,
+                                                 args.apply_mode)
 
         self._term_input = TerminalInput(disabled=args.no_terminal)
 
@@ -116,6 +117,9 @@ def main(args):
     parser.add_argument('-f', '--first', action="store_true",
                         help='Take first image received as the reference '
                         'image for registration')
+    parser.add_argument('-a', '--apply-mode', action="store_true",
+                        help=' respond to all transform requests with the '
+                        'first transform computed')
     parser.add_argument('-H', '--host', default='192.168.2.5',
                         help='Address of the scanner from which to listen '
                         'for images [localhost]')

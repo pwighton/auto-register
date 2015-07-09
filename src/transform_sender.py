@@ -3,16 +3,20 @@
 
 import re
 import struct
+import time
 
 from tcpip_server import ThreadedTCPServer
 
 class TransformSender(object):
 
-    def __init__(self, host, port):
+    def __init__(self, host, port, apply_mode):
         self._host = host
         self._port = port
         self._server = None
         self._transforms_to_send = []
+        self._apply_mode = apply_mode
+        self._delay = 5
+        self._delay_timer = time.time()
 
     def start(self):
         if self._server is not None and self._server.is_running():
@@ -58,15 +62,24 @@ class TransformSender(object):
             send_string("unrecognized request %s" % in_bytes)
             return
 
-        if len(self._transforms_to_send) == 0:
+        if ((self._apply_mode and
+             self._delay_timer - time.time() < self._delay) or
+            len(self._transforms_to_send) == 0):
             send_string("none\0")
             return
 
-        transform = self._transforms_to_send.pop()
+        if self._apply_mode:
+            transform = self._transforms_to_send[0]
+            delay_timer = time.time()
+        else:
+            transform = self._transforms_to_send.pop()
+
         if not send_string(transform + "\0"):
             print "Error sending transform"
         else:
             print "Transmitted transform string"
+
+
 
     def stop(self):
         if self._server is not None:
