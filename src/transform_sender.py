@@ -9,14 +9,12 @@ from tcpip_server import ThreadedTCPServer
 
 class TransformSender(object):
 
-    def __init__(self, host, port, apply_mode):
+    def __init__(self, host, port):
         self._host = host
         self._port = port
         self._server = None
         self._transforms_to_send = []
-        self._apply_mode = apply_mode
-        self._delay = 5
-        self._delay_timer = time.time()
+        self._state = ""
 
     def start(self):
         if self._server is not None and self._server.is_running():
@@ -26,6 +24,12 @@ class TransformSender(object):
         ip, port = server.server_address
         print "Transform sender running at %s on port %d" % (ip, port)
         self._server = server
+
+    def set_state(self, state):
+        self._state = state
+
+    def clear_state(self):
+        self._state = ""
 
     def send(self, transform):
 
@@ -47,6 +51,7 @@ class TransformSender(object):
         in_bytes = sock.recv(4096)
 
         def send_string(data):
+            data += "\0"
             chars_to_send = len(data)
 
             sent = 0
@@ -62,19 +67,16 @@ class TransformSender(object):
             send_string("unrecognized request %s" % in_bytes)
             return
 
-        if ((self._apply_mode and
-             self._delay_timer - time.time() < self._delay) or
-            len(self._transforms_to_send) == 0):
-            send_string("none\0")
+        if len(self._transforms_to_send) == 0:
+            if self._state == "":
+                send_string("none")
+            else:
+                send_string(self._state)
             return
 
-        if self._apply_mode:
-            transform = self._transforms_to_send[0]
-            delay_timer = time.time()
-        else:
-            transform = self._transforms_to_send.pop()
+        transform = self._transforms_to_send.pop()
 
-        if not send_string(transform + "\0"):
+        if not send_string(transform):
             print "Error sending transform"
         else:
             print "Transmitted transform string"

@@ -36,8 +36,7 @@ class AutoRegister(object):
         args.single_series = False
         self._image_receiver = ImageReceiver(args)
 
-        self._transform_sender = TransformSender(args.host, 15001,
-                                                 args.apply_mode)
+        self._transform_sender = TransformSender(args.host, 15001)
 
         self._term_input = TerminalInput(disabled=args.no_terminal)
 
@@ -64,13 +63,17 @@ class AutoRegister(object):
 
         while not self._should_shutdown:
 
+            self._transform_sender.set_state("checking")
             filename = self._image_receiver.get_next_filename()
             if filename is not None:
                 if self._reference is None: # need a reference
                     self._reference = filename
                     print "Using reference: %s" % filename
                 else: # register
+                    self._transform_sender.set_state("registering")
+
                     reg_image = RegisteredImage(self._reference, filename)
+
                     print "Registering %s to the reference" % filename
                     if reg_image.register():
                         print "Registration complete"
@@ -79,6 +82,8 @@ class AutoRegister(object):
                             print "Transform ready to send"
                         else:
                             print "Failed to prepare transform for sending"
+
+            self._transform_sender.clear_state()
 
             # must be the last task in the mainloop to handle shutdown
             # properly
@@ -117,9 +122,6 @@ def main(args):
     parser.add_argument('-f', '--first', action="store_true",
                         help='Take first image received as the reference '
                         'image for registration')
-    parser.add_argument('-a', '--apply-mode', action="store_true",
-                        help=' respond to all transform requests with the '
-                        'first transform computed')
     parser.add_argument('-H', '--host', default='192.168.2.5',
                         help='Address of the scanner from which to listen '
                         'for images [localhost]')
