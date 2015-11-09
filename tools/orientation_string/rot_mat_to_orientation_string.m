@@ -9,10 +9,10 @@ function orientation_str = rot_mat_to_orientation_string(R)
         eval(eval_str);
 
         if abs(a) <= 45 && abs(a) > abs(b)
-            if length(orientation_str) > 0
-                error(-1, 'ambiguous orientation_string, already had %s\n', ...
-                      orientation_string);
-            end
+            % if length(orientation_str) > 0
+            %     error(-1, sprintf('ambiguous orientation_string, already had %s\n', ...
+            %                       orientation_str));
+            %end
 
             orientation_str = sprintf('%s > %s (%0.2f) > %s (%0.2f)', ...
                                       orders{order, 1}, ...
