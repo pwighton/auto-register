@@ -1,4 +1,4 @@
-BASE=/usr/local
+BASE=/usr/
 
 CC = g++
 

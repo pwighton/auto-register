@@ -1,9 +1,11 @@
-function [deg1, deg2] = rot_mat_to_sct_orientation_string(R)
+function [deg1, deg2, deg3] = rot_mat_to_sct_orientation_string(R)
 
-    alpha1 = atan2(R(3, 2), -R(3, 1));
-    alpha2 = atan2(-R(3, 3), sqrt(R(3, 1)^2 + R(3, 2)^2));
+    gamma = atan2(R(2, 2), R(2, 1));
+    alpha1 = atan2(-R(2, 3), R(1, 3));
+    alpha2 = atan2(-R(3, 3), sqrt(R(1, 3)^2 + R(2, 3)^2));
 
     deg1 = rad2deg(alpha1);
     deg2 = rad2deg(alpha2);
+    deg3 = rad2deg(gamma);
 
 end
