@@ -93,8 +93,8 @@ class RegisteredImage:
         self._transform_file = out_stem + '.lta'
 
         cmd = [self._reg_prog,
-               '--dst', self._movable,
-               '--mov', self._reference,
+               '--mov', self._movable,
+               '--dst', self._reference,
                '--lta', self._transform_file,
                '--mapmov', out_stem + '_map.nii.gz',
                '--weights', out_stem + '_weights.nii.gz',
