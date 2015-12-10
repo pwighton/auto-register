@@ -58,14 +58,28 @@ class RegisteredImage:
                 print "Transform file ended unexpectedly"
                 return ''
 
-            if ([float(s) for s in transform.split()[-4:]] !=
-                [0.0, 0.0, 0.0, 1.0]):
-                print "Transform file parse error"
-                print [float(s) for s in transform.split()[-4:]]
+            T = np.eye(4)
+            Ts = transform.split();
+            for r in xrange(4):
+                for c in xrange(4):
+                    T[r][c] = float(Ts.pop(0))
 
-                return ''
+            # RAS -> LPS
+            flip = np.eye(4);
+            flip[0][0] = -1;
+            flip[1][1] = -1;
 
-        return ' '.join(transform.split()[:-4])
+            T = np.dot(np.dot(flip, T), flip);
+
+            print T
+
+            # convert to string (the dumb way)
+            T_str = ''
+            for r in xrange(4):
+                for c in xrange(4):
+                    T_str += "%0.9f " % T[r][c]
+
+        return T_str
 
     def __init__(self, reference, movable):
         self._reference = reference
@@ -93,8 +107,8 @@ class RegisteredImage:
         self._transform_file = out_stem + '.lta'
 
         cmd = [self._reg_prog,
-               '--mov', self._movable,
-               '--dst', self._reference,
+               '--mov', self._reference,
+               '--dst', self._movable,
                '--lta', self._transform_file,
                '--mapmov', out_stem + '_map.nii.gz',
                '--weights', out_stem + '_weights.nii.gz',
