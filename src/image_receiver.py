@@ -2,6 +2,7 @@
 
 import argparse
 from collections import namedtuple
+import glob
 import os
 import sys
 from time import sleep
@@ -21,13 +22,13 @@ class ImageReceiver(object):
         self.port = args.port
         self._server = None
 
-        self.imagestore = []
         self.save_location = args.save_directory
-        self.current_uid = None
-        self.current_uid_index = 0
-        self.current_series_hdr = None
-        self.save_4d = args.four_dimensional
-        self.stop_after_one_series = args.single_series
+        self.save_volume_index = 0
+
+        # find existing volumes so we don't overwrite them
+        existing = glob.glob(os.path.join(
+            self.save_location, "img-[0-9][0-9][0-9][0-9][0-9].nii.gz"))
+        self.save_volume_index = len(existing)
 
         self.ei = external_image.ExternalImage("ExternalImageHeader")
 
@@ -39,18 +40,10 @@ class ImageReceiver(object):
             self._server.shutdown()
             self._server = None
 
-        if self.save_4d:
-            self.save_imagestore()
-
         print "Image receiver stopped"
 
     def start(self):
         self._startserver()
-
-    def check(self):
-        if not self._server.is_running():
-            raise RuntimeError('Server is not running')
-        return self.imagestore
 
     def get_next_filename(self):
         filename = None
@@ -84,13 +77,6 @@ class ImageReceiver(object):
 
         hdr = self.ei.process_header(in_bytes)
 
-        # validation
-        if self.current_uid != hdr.seriesUID:
-            assert hdr.currentTR == 1
-            self.current_uid = hdr.seriesUID
-            self.current_uid_index += 1
-            self.current_series_hdr = hdr
-
         img_data = ""
         while len(img_data) < self.ei.get_image_size():
             in_bytes = sock.recv(4096)
@@ -106,57 +92,23 @@ class ImageReceiver(object):
 
         new_ei = self.ei.process_image(img_data)
         if new_ei:
-            if (isinstance(new_ei, nb.Nifti1Image) and
-                new_ei not in self.imagestore):
-                self.imagestore.append(new_ei)
-                if not self.save_4d:
-                    filename = self.save_nifti(new_ei)
-                    self._mutex.acquire()
-                    self._filename_stack.append(filename)
-                    self._mutex.release()
-
-            if hdr.currentTR + 1 == hdr.totalTR:
-                if self.save_4d:
-                    self.save_imagestore()
-                    self.imagestore = []
-                if self.stop_after_one_series:
-                    self.stop()
+            if isinstance(new_ei, nb.Nifti1Image):
+                filename = self.save_nifti(new_ei)
+                self._mutex.acquire()
+                self._filename_stack.append(filename)
+                self._mutex.release()
+            else:
+                print "ERROR: unknown image type:\n"
+                print new_ei
         else:
             self.stop()
 
     def save_nifti(self, img):
-        if len(img.get_shape()) == 3 or img.get_shape()[3] == 1:
-            index = len(self.imagestore) - 1
-            filename = os.path.join(
-                self.save_location,
-                'img-%s-%05d.nii.gz' % (self.current_uid, index))
-        else:
-            filename = os.path.join(self.save_location,
-                                    'img-%s.nii.gz' % self.current_uid)
+        filename = os.path.join(self.save_location,
+                                'img-%05d.nii.gz' % self.save_volume_index)
+        self.save_volume_index += 1
         img.to_filename(filename)
         return filename
-
-    def save_imagestore(self):
-        if len(self.imagestore) == 0:
-            return
-
-        base_shape = self.imagestore[0].get_shape()
-        new_shape = (base_shape[0], base_shape[1], base_shape[2],
-                     len(self.imagestore))
-        new_data = np.zeros(new_shape)
-        for i in xrange(new_shape[3]):
-            assert self.imagestore[i].get_shape() == \
-                self.imagestore[0].get_shape()
-            new_data[:,:,:,i] = self.imagestore[i].get_data()
-
-        new_img = nb.Nifti1Image(new_data, self.imagestore[0].get_affine())
-        new_img.get_header().set_zooms((
-                self.current_series_hdr.pixelSpacingReadMM,
-                self.current_series_hdr.pixelSpacingPhaseMM,
-                self.current_series_hdr.pixelSpacingSliceMM,
-                self.current_series_hdr.repetitionTimeMS +
-                self.current_series_hdr.repetitionDelayMS))
-        self.save_nifti(new_img)
 
 def parse_args(args):
     parser = argparse.ArgumentParser()
@@ -166,11 +118,6 @@ def parse_args(args):
                         help="Port to run the image receiver on.")
     parser.add_argument("-d", "--save_directory", default=".",
                         help="Directory to save images to.")
-    parser.add_argument("-f", "--four_dimensional", action="store_true",
-                        help="Store each image series as a single 4D file.")
-    parser.add_argument("-s", "--single_series", action="store_true",
-                        help="Shut down the receiver after one entire series "
-                        "has been read.")
     return parser.parse_args()
 
 def main(argv):

@@ -31,13 +31,8 @@ class AutoRegister(object):
         self._reference = args.reference
         self._should_shutdown = False
 
-        # unused but required reciever args
-        args.four_dimensional = False
-        args.single_series = False
         self._image_receiver = ImageReceiver(args)
-
         self._transform_sender = TransformSender(args.host, 15001)
-
         self._term_input = TerminalInput(disabled=args.no_terminal)
 
     def check_for_input(self):
