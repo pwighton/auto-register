@@ -36,3 +36,13 @@ make
 
 cd <path to>/auto_register/test/util/scanner_sim/
 ./vsend_nii <path to nii file>
+
+
+TODO:
+
+- Account for non-centered first session diagnostic scans.
+- User guide
+- Debug sometimes AA matrix doesn't take
+  - Pipe service error. have logs
+- UUID errors
+- Tests (nose)
