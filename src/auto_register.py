@@ -11,7 +11,7 @@ import traceback
 from image_receiver import ImageReceiver
 from registered_image import RegisteredImage
 from transform_sender import TransformSender
-from util import TerminalInput
+from terminal_input import TerminalInput
 
 class AutoRegister(object):
 

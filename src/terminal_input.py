@@ -1,3 +1,6 @@
+"""class to interact with the user through a terminal.
+"""
+
 import fcntl
 import os
 import sys
