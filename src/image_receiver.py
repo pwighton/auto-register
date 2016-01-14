@@ -20,7 +20,7 @@ class ImageReceiver(object):
     def __init__(self, args):
         self.host = args.host
         self.port = args.port
-        self._server = None
+        self.server = None
 
         self.save_location = args.save_directory
         self.save_volume_index = 0
@@ -32,13 +32,13 @@ class ImageReceiver(object):
 
         self.ei = external_image.ExternalImage("ExternalImageHeader")
 
-        self._mutex = threading.Lock()
-        self._filename_stack = []
+        self.mutex = threading.Lock()
+        self.filename_stack = []
 
     def stop(self):
-        if self._server is not None:
-            self._server.shutdown()
-            self._server = None
+        if self.server is not None:
+            self.server.shutdown()
+            self.server = None
 
         print "Image receiver stopped"
 
@@ -47,24 +47,24 @@ class ImageReceiver(object):
 
     def get_next_filename(self):
         filename = None
-        self._mutex.acquire()
-        if len(self._filename_stack) > 0:
-            filename = self._filename_stack.pop()
-        self._mutex.release()
+        self.mutex.acquire()
+        if len(self.filename_stack) > 0:
+            filename = self.filename_stack.pop()
+        self.mutex.release()
 
         return filename
 
     def _startserver(self):
-        if self._server is not None and self._server.is_running():
+        if self.server is not None and self.server.is_running():
             raise RuntimeError('Server already running')
 
         server = ThreadedTCPServer((self.host, self.port), self.process_data)
         ip, port = server.server_address
         print "Image receiver running at %s on port %d" % (ip, port)
-        self._server = server
+        self.server = server
 
     def is_running(self):
-        return self._server.is_running()
+        return self.server.is_running()
 
     def process_data(self, sock):
         in_bytes = sock.recv(self.ei.get_header_size())
@@ -94,9 +94,9 @@ class ImageReceiver(object):
         if new_ei:
             if isinstance(new_ei, nb.Nifti1Image):
                 filename = self.save_nifti(new_ei)
-                self._mutex.acquire()
-                self._filename_stack.append(filename)
-                self._mutex.release()
+                self.mutex.acquire()
+                self.filename_stack.append(filename)
+                self.mutex.release()
             else:
                 print "ERROR: unknown image type:\n"
                 print new_ei
