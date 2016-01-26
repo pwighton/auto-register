@@ -64,22 +64,9 @@ class RegisteredImage:
                 for c in xrange(4):
                     T[r][c] = float(Ts.pop(0))
 
-            # RAS -> LPS
-            flip = np.eye(4);
-            flip[0][0] = -1;
-            flip[1][1] = -1;
+            return T
 
-            T = np.dot(np.dot(flip, T), flip);
-
-            print T
-
-            # convert to string (the dumb way)
-            T_str = ''
-            for r in xrange(4):
-                for c in xrange(4):
-                    T_str += "%0.9f " % T[r][c]
-
-        return T_str
+        return None
 
     def __init__(self, reference, movable):
         self._reference = reference
@@ -90,11 +77,49 @@ class RegisteredImage:
 
         self._transform_file = None
 
+    def set_ref_vox2ras(self, ref_vox2ras):
+        self._ref_vox2ras = ref_vox2ras
+
+    def set_mov_vox2ras(self, mov_vox2ras):
+        self._mov_vox2ras = mov_vox2ras
+
     def get_transform_filename(self):
         return self._transform_file
 
     def get_transform(self):
-        return RegisteredImage.read_transform_file(self._transform_file)
+        T = RegisteredImage.read_transform_file(self._transform_file)
+
+        # account for reference vox2ras
+        ref = nb.load(self._reference)
+        ref_vox2ras = ref.get_affine()
+
+        mov = nb.load(self._movable)
+        mov_vox2ras = mov.get_affine()
+
+        Fov = np.dot(ref_vox2ras, np.linalg.inv(mov_vox2ras))
+
+        T = np.dot(Fov, T)
+
+        print Fov
+        print T
+
+        # RAS -> LPS
+        flip = np.eye(4)
+        flip[0][0] = -1
+        flip[1][1] = -1
+
+        T = np.dot(np.dot(flip, T), flip)
+
+        print T
+
+        # convert to string (the dumb way)
+        T_str = ''
+        for r in xrange(4):
+            for c in xrange(4):
+                T_str += "%0.9f " % T[r][c]
+
+        return T_str
+
 
     def register(self):
 

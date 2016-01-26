@@ -107,31 +107,6 @@ class ImageReceiver(object):
         filename = os.path.join(self.save_location,
                                 'img-%05d.nii.gz' % self.save_volume_index)
         img.to_filename(filename)
-
-        # Check whether all off-diagonal entries in the vox2ras matrix
-        # are 0. If not, create a version of this nifti volume that
-        # assumes acquisition happened squarely centered on the
-        # origin. This is required to account for the transformation
-        # that may be applied by AutoAlign or the technician when
-        # acquiring the reference diagnostic image(s).
-        if (np.sum(np.abs(img.affine[0:3, 0:3])) -
-            np.sum(abs(np.diag(img.affine[0:3, 0:3]))) > 0.0001):
-
-            filename = os.path.join(
-                self.save_location,
-                'img-%05d-origin.nii.gz' % self.save_volume_index)
-
-            # WARNING: siemens specific code here
-            origin_vox2ras = \
-              [[-img.header.get_zooms()[0], 0, 0, img.get_shape()[0]],
-               [0, -img.header.get_zooms()[1], 0, img.get_shape()[1]],
-               [0, 0,  img.header.get_zooms()[2], -img.get_shape()[2] + 1],
-               [0, 0, 0, 1]]
-            img.set_sform(origin_vox2ras)
-            img.header.set_sform(origin_vox2ras)
-
-            img.to_filename(filename)
-
         self.save_volume_index += 1
         return filename
 

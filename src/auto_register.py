@@ -4,6 +4,8 @@
 """
 
 import argparse
+import nibabel as nb
+import numpy as np
 import os
 import sys
 import traceback
@@ -29,6 +31,9 @@ class AutoRegister(object):
             raise ValueError("Both --reference and --first cannot be set")
 
         self._reference = args.reference
+        if self._reference is not None:
+            print "Using reference: %s" % self._reference
+
         self._should_shutdown = False
 
         self._image_receiver = ImageReceiver(args)
