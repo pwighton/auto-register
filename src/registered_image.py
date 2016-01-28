@@ -68,20 +68,22 @@ class RegisteredImage:
 
         return None
 
-    def __init__(self, reference, movable):
+    def __init__(self, reference, movable, opts=None, verbose=False):
         self._reference = reference
         self._movable = movable
+        self._verbose = verbose
 
         self._robust_reg_options = ['--satit',
                                     '--iscale']
 
+        if opts is not None:
+            self._robust_reg_options += opts
+
+        if self._verbose:
+            print "using robust register options: "
+            print self._robust_reg_options
+
         self._transform_file = None
-
-    def set_ref_vox2ras(self, ref_vox2ras):
-        self._ref_vox2ras = ref_vox2ras
-
-    def set_mov_vox2ras(self, mov_vox2ras):
-        self._mov_vox2ras = mov_vox2ras
 
     def get_transform_filename(self):
         return self._transform_file
@@ -100,9 +102,6 @@ class RegisteredImage:
 
         T = np.dot(Fov, T)
 
-        print Fov
-        print T
-
         # RAS -> LPS
         flip = np.eye(4)
         flip[0][0] = -1
@@ -110,7 +109,11 @@ class RegisteredImage:
 
         T = np.dot(np.dot(flip, T), flip)
 
-        print T
+        if self._verbose:
+            print "FOV:"
+            print Fov
+            print "T:"
+            print T
 
         # convert to string (the dumb way)
         T_str = ''
@@ -139,6 +142,9 @@ class RegisteredImage:
                '--weights', out_stem + '_weights.nii.gz',
               ] + self._robust_reg_options
 
+        if self._verbose:
+            print ' '.join(cmd)
+
         try:
             reg_proc = subprocess.Popen(cmd,
                                         stdout=subprocess.PIPE,
@@ -148,6 +154,9 @@ class RegisteredImage:
             if reg_proc.returncode == 0:
                 with open(out_stem + '.log', 'w') as log:
                     log.write(out)
+
+                if self._verbose:
+                    print out
             else:
                 print "Failure executing command:"
                 print cmd
@@ -173,6 +182,11 @@ def main(argv):
             raise ValueError("%s does not exist" % path)
         return path
 
+    def splitOptions(opts):
+        if opts is None or opts == '':
+            return None
+        return opts.split()
+
     # parse args
     parser = argparse.ArgumentParser()
     parser.add_argument('reference', type=verifyPathExists,
@@ -181,10 +195,15 @@ def main(argv):
     parser.add_argument('movable', type=verifyPathExists,
                         help='Path to nifti image to use as the movable '
                         'image for registration')
+    parser.add_argument('-o', '--options', type=splitOptions,
+                        help='Extra options to pass mri_robust_register')
+    parser.add_argument('-v', '--verbose', action="store_true",
+                        help='Enable verbose output')
 
     args = parser.parse_args()
 
-    ri = RegisteredImage(args.reference, args.movable)
+    ri = RegisteredImage(args.reference, args.movable,
+                         opts=args.options, verbose=args.verbose)
 
     print "Registering %s to %s" % (args.movable, args.reference)
 
