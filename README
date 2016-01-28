@@ -1,47 +1,10 @@
 Automatically register subsequent acquisitions to a reference.
 
-Installation:
-
-* Dependencies:
-- For running the system:
-python, virtualenv, freesurfer
-- For developing the system:
-ACE, nifticlib-2.0.0 (for the vsend testing tool)
-
-* Clone the repo (from inside the NMR center, after you have been
-granted access)
-git clone git@gitlab:ohinds/auto_register
-
-* Setup the python environment
-
-cd <path to>/auto_register
-virtualenv aaenv
-source aaenv/bin/activate
-pip install git+git://github.com/nipy/nibabel.git
-
-* Run the AutoRegister tool
-
-cd <path to>/auto_register
-source aaenv/bin/activate
-SetupFreesurfer.sh
-./auto_register.py -s <directory to save niftis to> -f | -r <reference image>
-(See the help for more options)
-
-* Setup the VSend simulator
-
-cd <path to>/auto_register/test/util/scanner_sim/
-make
-
-* Run the VSend simulator
-
-cd <path to>/auto_register/test/util/scanner_sim/
-./vsend_nii <path to nii file>
+For installation and usage instructions, see doc/user_guide.md
 
 
 TODO:
 
-- Account for non-centered first session diagnostic scans.
-- User guide
 - Debug sometimes AA matrix doesn't take
   - Pipe service error. have logs
 - UUID errors
