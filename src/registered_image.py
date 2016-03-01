@@ -91,16 +91,14 @@ class RegisteredImage:
     def get_transform(self):
         T = RegisteredImage.read_transform_file(self._transform_file)
 
-        # account for reference vox2ras
         ref = nb.load(self._reference)
-        ref_vox2ras = ref.get_affine()
-
         mov = nb.load(self._movable)
+
+        # account for reference vox2ras
+        ref_vox2ras = ref.get_affine()
         mov_vox2ras = mov.get_affine()
-
         Fov = np.dot(ref_vox2ras, np.linalg.inv(mov_vox2ras))
-
-        T = np.dot(Fov, T)
+        T = np.dot(T, Fov)
 
         # RAS -> LPS
         flip = np.eye(4)
