@@ -152,9 +152,6 @@ class RegisteredImage:
             if reg_proc.returncode == 0:
                 with open(out_stem + '.log', 'w') as log:
                     log.write(out)
-
-                if self._verbose:
-                    print out
             else:
                 print "Failure executing command:"
                 print cmd

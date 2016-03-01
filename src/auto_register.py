@@ -72,7 +72,8 @@ class AutoRegister(object):
                 else: # register
                     self._transform_sender.set_state("registering")
 
-                    reg_image = RegisteredImage(self._reference, filename)
+                    reg_image = RegisteredImage(self._reference, filename,
+                                                verbose=True)
 
                     print "Registering %s to the reference" % filename
                     if reg_image.register():
