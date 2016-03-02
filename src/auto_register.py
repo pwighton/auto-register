@@ -40,6 +40,9 @@ class AutoRegister(object):
         self._transform_sender = TransformSender(args.host, 15001)
         self._term_input = TerminalInput(disabled=args.no_terminal)
 
+        self._last_transform = None
+        self._resend_mode = args.resend
+
     def check_for_input(self):
         """Return the last character input, or None. If 'q' is seen, the
         autoregister application shuts down.
@@ -75,14 +78,23 @@ class AutoRegister(object):
                     reg_image = RegisteredImage(self._reference, filename,
                                                 verbose=True)
 
-                    print "Registering %s to the reference" % filename
-                    if reg_image.register():
-                        print "Registration complete"
-
-                        if self._transform_sender.send(reg_image.get_transform()):
+                    def send_last_transform():
+                        if self._transform_sender.send(self._last_transform):
                             print "Transform ready to send"
                         else:
                             print "Failed to prepare transform for sending"
+
+                    if self._resend_mode and self._last_transform is not None:
+                        print ("WARNING: in resend mode, just resending the "
+                               "transform we already have")
+                        send_last_transform()
+                    else:
+                        print "Registering %s to the reference" % filename
+                        if reg_image.register():
+                            print "Registration complete"
+
+                            self._last_transform = reg_image.get_transform()
+                            send_last_transform()
 
             self._transform_sender.clear_state()
 
@@ -123,6 +135,11 @@ def main(args):
     parser.add_argument('-f', '--first', action="store_true",
                         help='Take first image received as the reference '
                         'image for registration')
+    parser.add_argument('-R', '--resend', action="store_true",
+                        help='After a registration is computed, just resend '
+                        'that registration each time a new image is received '
+                        '(useful for minimizing the time impact of persistent '
+                        'timeout-based image recon errors)')
     parser.add_argument('-H', '--host', default='192.168.2.5',
                         help='Address of the scanner from which to listen '
                         'for images [localhost]')
