@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+"""Receive images sent to a TCP server. Also save the images and make
+the filename available through an external interface.
+
+"""
+
 import argparse
 from collections import namedtuple
 import glob
@@ -16,8 +21,14 @@ import numpy as np
 
 
 class ImageReceiver(object):
+    """Run a TCP server, receive images, and save them.
+    """
 
     def __init__(self, args):
+        """Store arguments, determine first available image name so we don't
+        overwrite existing images, and create a template image header for saving.
+        """
+
         self.host = args.host
         self.port = args.port
         self.server = None
@@ -36,6 +47,8 @@ class ImageReceiver(object):
         self.filename_stack = []
 
     def stop(self):
+        """Stop listening for incoming images.
+        """
         if self.server is not None:
             self.server.shutdown()
             self.server = None
@@ -43,18 +56,8 @@ class ImageReceiver(object):
         print "Image receiver stopped"
 
     def start(self):
-        self._startserver()
-
-    def get_next_filename(self):
-        filename = None
-        self.mutex.acquire()
-        if len(self.filename_stack) > 0:
-            filename = self.filename_stack.pop()
-        self.mutex.release()
-
-        return filename
-
-    def _startserver(self):
+        """Start the server to listen for incoming images.
+        """
         if self.server is not None and self.server.is_running():
             raise RuntimeError('Server already running')
 
@@ -63,10 +66,29 @@ class ImageReceiver(object):
         print "Image receiver running at %s on port %d" % (ip, port)
         self.server = server
 
+    def get_next_filename(self):
+        """If there is a new image file available, return it and remove the
+        filename from those available.
+        """
+
+        filename = None
+        self.mutex.acquire()
+        if len(self.filename_stack) > 0:
+            filename = self.filename_stack.pop()
+        self.mutex.release()
+
+        return filename
+
     def is_running(self):
+        """Get whether the server is running.
+        """
+
         return self.server.is_running()
 
     def process_data(self, sock):
+        """Callback to receive image data when it arrives.
+        """
+
         in_bytes = sock.recv(self.ei.get_header_size())
 
         if len(in_bytes) != self.ei.get_header_size():
@@ -104,6 +126,9 @@ class ImageReceiver(object):
             self.stop()
 
     def save_nifti(self, img):
+        """Save a received image to a file.
+        """
+
         filename = os.path.join(self.save_location,
                                 'img-%05d.nii.gz' % self.save_volume_index)
         img.to_filename(filename)
@@ -111,6 +136,11 @@ class ImageReceiver(object):
         return filename
 
 def parse_args(args):
+    """Parse command line arguments.
+
+    USED IN STANDALONE MODE ONLY
+    """
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-H", "--host", default="localhost",
                         help="Name of the host to run the image receiver on.")
@@ -121,6 +151,11 @@ def parse_args(args):
     return parser.parse_args()
 
 def main(argv):
+    """Main entry. Just starts the server and waits for it to finish.
+
+    USED IN STANDALONE MODE ONLY
+    """
+
     args = parse_args(argv)
     receiver = ImageReceiver(args)
     receiver.start()

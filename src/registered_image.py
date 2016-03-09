@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-"""Class that registers two images and stores info about the registration.
-"""
-
 import argparse
 import nibabel as nb
 import numpy as np
@@ -12,11 +9,17 @@ import subprocess
 import re
 
 class RegisteredImage:
+    """Class that registers two images and stores info about the registration.
+    """
 
     _reg_prog = 'mri_robust_register'
 
     @classmethod
     def check_environment(cls):
+        """Make sure that our environment is able to execute the registration
+        program.
+        """
+
         cmd = [cls._reg_prog]
 
         try:
@@ -38,6 +41,8 @@ class RegisteredImage:
 
     @classmethod
     def read_transform_file(cls, filename):
+        """Read and LTA file and parse the transformation it contains.
+        """
         with open(filename) as f:
             transform_line_re = re.compile('([0-9.e\-\+]+\s){4}')
             transform = ''
@@ -69,6 +74,9 @@ class RegisteredImage:
         return None
 
     def __init__(self, reference, movable, opts=None, verbose=False):
+        """Setup for performing registrations.
+        """
+
         self._reference = reference
         self._movable = movable
         self._verbose = verbose
@@ -86,9 +94,16 @@ class RegisteredImage:
         self._transform_file = None
 
     def get_transform_filename(self):
+        """Return the name of the most recently computed transform.
+        """
+
         return self._transform_file
 
     def get_transform(self):
+        """Retrieve a 4x4 numpy matrix representing the most recently computed
+        transform.
+        """
+
         T = RegisteredImage.read_transform_file(self._transform_file)
 
         ref = nb.load(self._reference)
@@ -123,6 +138,9 @@ class RegisteredImage:
 
 
     def register(self):
+        """Call out to the external program to register the reference and
+        movable images.
+        """
 
         out_stem = '.'.join(self._movable.split('.')[:-1])
 
@@ -167,6 +185,11 @@ class RegisteredImage:
 
 
 def main(argv):
+    """During standalone operation, build all the arguments that would
+    normally be passed in from the calling module and pass them into a
+    RegisteredImage class instance.
+    """
+
     def verifyPathExists(path):
         if not os.path.exists(path):
             raise ValueError("%s does not exist" % path)

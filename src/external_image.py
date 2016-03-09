@@ -1,3 +1,6 @@
+"""Storage and I/O for an image received from an external sender.
+"""
+
 from collections import namedtuple
 import os
 import struct
@@ -14,11 +17,7 @@ def mosaic(data):
     for idx in range(z):
         x_idx = int(np.floor(idx/n)) * x
         y_idx = int(idx % n) * y
-        # print x_idx, y_idx
-        # print data.shape
         X[x_idx:x_idx + x, y_idx:y_idx + y] = data[..., idx]
-        #import pylab
-        #pylab.imshow(X, interpolation='nearest')
     return X
 
 def demosaic(mosaic, x, y, z):

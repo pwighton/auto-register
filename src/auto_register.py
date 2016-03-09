@@ -4,8 +4,6 @@
 """
 
 import argparse
-import nibabel as nb
-import numpy as np
 import os
 import sys
 import traceback
@@ -114,6 +112,9 @@ class AutoRegister(object):
         self._transform_sender.stop()
 
 def main(args):
+    """Main entry point
+    """
+
     def verifyPathExists(path):
         if not os.path.exists(path):
             raise ValueError("%s does not exist" % path)
