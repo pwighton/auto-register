@@ -1,0 +1,155 @@
+Help on module tcpip_server:
+
+NAME
+    tcpip_server - Threaded TCP/IP server that will notify a callback on a new connection.
+
+FILE
+    /home/ohinds/projects/auto_register/src/tcpip_server.py
+
+CLASSES
+    SocketServer.BaseRequestHandler
+        ThreadedTCPRequestHandler
+    SocketServer.TCPServer(SocketServer.BaseServer)
+        ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer)
+    SocketServer.ThreadingMixIn
+        ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer)
+    
+    class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler)
+     |  Methods defined here:
+     |  
+     |  __init__(self, callback, *args, **keys)
+     |  
+     |  handle(self)
+     |  
+     |  ----------------------------------------------------------------------
+     |  Methods inherited from SocketServer.BaseRequestHandler:
+     |  
+     |  finish(self)
+     |  
+     |  setup(self)
+    
+    class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer)
+     |  Method resolution order:
+     |      ThreadedTCPServer
+     |      SocketServer.ThreadingMixIn
+     |      SocketServer.TCPServer
+     |      SocketServer.BaseServer
+     |  
+     |  Methods defined here:
+     |  
+     |  __init__(self, address, callback)
+     |  
+     |  is_running(self)
+     |  
+     |  ----------------------------------------------------------------------
+     |  Methods inherited from SocketServer.ThreadingMixIn:
+     |  
+     |  process_request(self, request, client_address)
+     |      Start a new thread to process the request.
+     |  
+     |  process_request_thread(self, request, client_address)
+     |      Same as in BaseServer but as a thread.
+     |      
+     |      In addition, exception handling is done here.
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data and other attributes inherited from SocketServer.ThreadingMixIn:
+     |  
+     |  daemon_threads = False
+     |  
+     |  ----------------------------------------------------------------------
+     |  Methods inherited from SocketServer.TCPServer:
+     |  
+     |  close_request(self, request)
+     |      Called to clean up an individual request.
+     |  
+     |  fileno(self)
+     |      Return socket file number.
+     |      
+     |      Interface required by select().
+     |  
+     |  get_request(self)
+     |      Get the request and client address from the socket.
+     |      
+     |      May be overridden.
+     |  
+     |  server_activate(self)
+     |      Called by constructor to activate the server.
+     |      
+     |      May be overridden.
+     |  
+     |  server_bind(self)
+     |      Called by constructor to bind the socket.
+     |      
+     |      May be overridden.
+     |  
+     |  server_close(self)
+     |      Called to clean-up the server.
+     |      
+     |      May be overridden.
+     |  
+     |  shutdown_request(self, request)
+     |      Called to shutdown and close an individual request.
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data and other attributes inherited from SocketServer.TCPServer:
+     |  
+     |  address_family = 2
+     |  
+     |  allow_reuse_address = True
+     |  
+     |  request_queue_size = 5
+     |  
+     |  socket_type = 1
+     |  
+     |  ----------------------------------------------------------------------
+     |  Methods inherited from SocketServer.BaseServer:
+     |  
+     |  finish_request(self, request, client_address)
+     |      Finish one request by instantiating RequestHandlerClass.
+     |  
+     |  handle_error(self, request, client_address)
+     |      Handle an error gracefully.  May be overridden.
+     |      
+     |      The default is to print a traceback and continue.
+     |  
+     |  handle_request(self)
+     |      Handle one request, possibly blocking.
+     |      
+     |      Respects self.timeout.
+     |  
+     |  handle_timeout(self)
+     |      Called if no new request arrives within self.timeout.
+     |      
+     |      Overridden by ForkingMixIn.
+     |  
+     |  serve_forever(self, poll_interval=0.5)
+     |      Handle one request at a time until shutdown.
+     |      
+     |      Polls for shutdown every poll_interval seconds. Ignores
+     |      self.timeout. If you need to do periodic tasks, do them in
+     |      another thread.
+     |  
+     |  shutdown(self)
+     |      Stops the serve_forever loop.
+     |      
+     |      Blocks until the loop has finished. This must be called while
+     |      serve_forever() is running in another thread, or it will
+     |      deadlock.
+     |  
+     |  verify_request(self, request, client_address)
+     |      Verify the request.  May be overridden.
+     |      
+     |      Return True if we should proceed with this request.
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data and other attributes inherited from SocketServer.BaseServer:
+     |  
+     |  timeout = None
+
+FUNCTIONS
+    handler_factory(callback)
+    
+    process_data_callback(callback, sock)
+
+

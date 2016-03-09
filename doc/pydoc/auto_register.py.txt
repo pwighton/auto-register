@@ -1,0 +1,43 @@
+Help on module auto_register:
+
+NAME
+    auto_register - Main file and class for the autoregister application.
+
+FILE
+    /home/ohinds/projects/auto_register/src/auto_register.py
+
+CLASSES
+    __builtin__.object
+        AutoRegister
+    
+    class AutoRegister(__builtin__.object)
+     |  Methods defined here:
+     |  
+     |  __init__(self, args)
+     |      Initialize the autoregister application and helper modules.
+     |  
+     |  check_for_input(self)
+     |      Return the last character input, or None. If 'q' is seen, the
+     |      autoregister application shuts down.
+     |  
+     |  run(self)
+     |      Main loop of the autoregister application.
+     |  
+     |  shutdown(self)
+     |      Shutdown the autoregister application. Stops the mainloop and
+     |      tears down helper modules.
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data descriptors defined here:
+     |  
+     |  __dict__
+     |      dictionary for instance variables (if defined)
+     |  
+     |  __weakref__
+     |      list of weak references to the object (if defined)
+
+FUNCTIONS
+    main(args)
+        Main entry point
+
+

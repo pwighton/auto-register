@@ -135,116 +135,31 @@ Python. It has been tested with Python version 2.7.
 
 The top-level file in the Registration module.
 
-#+BEGIN_EXAMPLE
-NAME
-    auto_register - Main file and class for the autoregister application.
-
-FILE
-    /home/ohinds/projects/auto_register/src/auto_register.py
-
-CLASSES
-    __builtin__.object
-        AutoRegister
-
-    class AutoRegister(__builtin__.object)
-     |  Methods defined here:
-     |
-     |  __init__(self, args)
-     |      Initialize the autoregister application and helper modules.
-     |
-     |  check_for_input(self)
-     |      Return the last character input, or None. If 'q' is seen, the
-     |      autoregister application shuts down.
-     |
-     |  run(self)
-     |      Main loop of the autoregister application.
-     |
-     |  shutdown(self)
-     |      Shutdown the autoregister application. Stops the mainloop and
-     |      tears down helper modules.
-
-FUNCTIONS
-    main(args)
-        Main entry point
-#+END_EXAMPLE
+#+INCLUDE: pydoc/auto_register.py.txt example
 
 *** =external_image.py=
 
-#+BEGIN_EXAMPLE
-NAME
-    external_image
-
-FILE
-    /home/ohinds/projects/auto_register/src/external_image.py
-
-CLASSES
-    __builtin__.object
-        ExternalImage
-
-    class ExternalImage(__builtin__.object)
-     |  Methods defined here:
-     |
-     |  __init__(self, typename, format_def)
-     |
-     |  create_header(self, img, idx, nt, mosaic)
-     |
-     |  from_image(self, img, idx, nt, mosaic=True)
-     |
-     |  get_header_size(self)
-     |
-     |  get_image_size(self)
-     |
-     |  hdr_from_bytes(self, byte_str)
-     |
-     |  hdr_to_bytes(self, hdr_info)
-     |
-     |  make_img(self, in_bytes)
-     |
-     |  process_header(self, in_bytes)
-     |
-     |  process_image(self, in_bytes)
-     |
-     |  ----------------------------------------------------------------------
-     |  Data and other attributes defined here:
-     |
-     |  struct_def = [('magic', '5s'), ('headerVersion', 'i'), ('seriesUID', '...
-
-FUNCTIONS
-    demosaic(mosaic, x, y, z)
-
-    mosaic(data)
-
-    sleep(...)
-        sleep(seconds)
-
-        Delay execution for a given number of seconds.  The argument may be
-        a floating point number for subsecond precision.
-#+END_EXAMPLE
+#+INCLUDE: pydoc/external_image.py.txt example
 
 *** =image_receiver.py=
 
-#+BEGIN_EXAMPLE
-#+END_EXAMPLE
+#+INCLUDE: pydoc/image_receiver.py.txt example
 
 *** =registered_image.py=
 
-#+BEGIN_EXAMPLE
-#+END_EXAMPLE
+#+INCLUDE: pydoc/registered_image.py.txt example
 
 *** =tcpip_server.py=
 
-#+BEGIN_EXAMPLE
-#+END_EXAMPLE
+#+INCLUDE: pydoc/tcpip_server.py.txt example
 
 *** =terminal_input.py=
 
-#+BEGIN_EXAMPLE
-#+END_EXAMPLE
+#+INCLUDE: pydoc/terminal_input.py.txt example
 
 *** =transform_sender.py=
 
-#+BEGIN_EXAMPLE
-#+END_EXAMPLE
+#+INCLUDE: pydoc/transform_sender.py.txt example
 
 ** Tools
 

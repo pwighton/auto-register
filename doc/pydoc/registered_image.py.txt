@@ -1,0 +1,47 @@
+Help on module registered_image:
+
+NAME
+    registered_image
+
+FILE
+    /home/ohinds/projects/auto_register/src/registered_image.py
+
+CLASSES
+    RegisteredImage
+    
+    class RegisteredImage
+     |  Class that registers two images and stores info about the registration.
+     |  
+     |  Methods defined here:
+     |  
+     |  __init__(self, reference, movable, opts=None, verbose=False)
+     |      Setup for performing registrations.
+     |  
+     |  get_transform(self)
+     |      Retrieve a 4x4 numpy matrix representing the most recently computed
+     |      transform.
+     |  
+     |  get_transform_filename(self)
+     |      Return the name of the most recently computed transform.
+     |  
+     |  register(self)
+     |      Call out to the external program to register the reference and
+     |      movable images.
+     |  
+     |  ----------------------------------------------------------------------
+     |  Class methods defined here:
+     |  
+     |  check_environment(cls) from __builtin__.classobj
+     |      Make sure that our environment is able to execute the registration
+     |      program.
+     |  
+     |  read_transform_file(cls, filename) from __builtin__.classobj
+     |      Read and LTA file and parse the transformation it contains.
+
+FUNCTIONS
+    main(argv)
+        During standalone operation, build all the arguments that would
+        normally be passed in from the calling module and pass them into a
+        RegisteredImage class instance.
+
+

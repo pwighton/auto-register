@@ -1,0 +1,71 @@
+Help on module image_receiver:
+
+NAME
+    image_receiver
+
+FILE
+    /home/ohinds/projects/auto_register/src/image_receiver.py
+
+DESCRIPTION
+    Receive images sent to a TCP server. Also save the images and make
+    the filename available through an external interface.
+
+CLASSES
+    __builtin__.object
+        ImageReceiver
+    
+    class ImageReceiver(__builtin__.object)
+     |  Run a TCP server, receive images, and save them.
+     |  
+     |  Methods defined here:
+     |  
+     |  __init__(self, args)
+     |      Store arguments, determine first available image name so we don't
+     |      overwrite existing images, and create a template image header for saving.
+     |  
+     |  get_next_filename(self)
+     |      If there is a new image file available, return it and remove the
+     |      filename from those available.
+     |  
+     |  is_running(self)
+     |      Get whether the server is running.
+     |  
+     |  process_data(self, sock)
+     |      Callback to receive image data when it arrives.
+     |  
+     |  save_nifti(self, img)
+     |      Save a received image to a file.
+     |  
+     |  start(self)
+     |      Start the server to listen for incoming images.
+     |  
+     |  stop(self)
+     |      Stop listening for incoming images.
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data descriptors defined here:
+     |  
+     |  __dict__
+     |      dictionary for instance variables (if defined)
+     |  
+     |  __weakref__
+     |      list of weak references to the object (if defined)
+
+FUNCTIONS
+    main(argv)
+        Main entry. Just starts the server and waits for it to finish.
+        
+        USED IN STANDALONE MODE ONLY
+    
+    parse_args(args)
+        Parse command line arguments.
+        
+        USED IN STANDALONE MODE ONLY
+    
+    sleep(...)
+        sleep(seconds)
+        
+        Delay execution for a given number of seconds.  The argument may be
+        a floating point number for subsecond precision.
+
+
