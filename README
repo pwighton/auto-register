@@ -1,11 +1,10 @@
 Automatically register subsequent acquisitions to a reference.
 
-For installation and usage instructions, see doc/user_guide.md
+For installation and usage instructions, see doc/workflow.md
 
 
 TODO:
 
 - Debug sometimes AA matrix doesn't take
   - Pipe service error. have logs
-- UUID errors
 - Tests (nose)
