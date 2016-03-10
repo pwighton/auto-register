@@ -219,15 +219,29 @@ ping only if there are any transformations in the send queue.
 
 ** Tools
 
-*** vsend_nii
+*** =vsend_nii=
 
-TODO
+The C++ tool =vsend_nii= simulates the image sending functionality of
+the MR Image reconstruction module. This was used in development and
+testing of the AutoRegister Registration module, and can be used to
+reproduce the results of executing =auto_register.py= while not at an
+MRI scanner.
+
+=vsend_nii= depends on the libraries ACE
+(http://www.cs.wustl.edu/~schmidt/ACE.html) and niftilib
+(http://niftilib.sourceforge.net/). Both of these packages are
+available in the Ubuntu repositories.
+
+To build the =vsend_nii= executable, change to the directory
+=tools/scanner_sim= and execute =make=. To execute it, run the binary
+from the command line, passing the path to a NIFTI image file as an
+argument.
 
 ** Tests
 
 TODO
 
-* MR image reconstruction module
+* MR image Reconstruction module
 
 ** Repository
 
