@@ -1,7 +1,7 @@
 Help on module transform_sender:
 
 NAME
-    transform_sender - class to transmit an affine transform over a socket.
+    transform_sender
 
 FILE
     /home/ohinds/projects/auto_register/src/transform_sender.py
@@ -11,17 +11,38 @@ CLASSES
         TransformSender
     
     class TransformSender(__builtin__.object)
+     |  Sends a transformation to an external computer. At the moment, this
+     |  transformation is only suitable for use in the Siemens AutoAlign
+     |  system (or other systems that use a compatible coordinate system).
+     |  
+     |  This "sender" is actually a TCP server that listens for "ping"
+     |  requests from an external receiver. When a transform is available
+     |  to send, the server responds to the ping request by transmitting
+     |  the transform.
+     |  
      |  Methods defined here:
      |  
      |  __init__(self, host, port)
+     |      Initialize the networking parameters and internal state.
      |  
      |  clear_state(self)
+     |      Set the interal state to an empty string (allowing transformations
+     |      to be sent).
      |  
      |  process_data(self, sock)
+     |      Callback when a "ping" request is received. This checks that the
+     |      request bytes are actually "ping", and replies with the string
+     |      "none" if there are no transforms queued for sending, and
+     |      otherwise sends the first transform available.
      |  
      |  send(self, transform)
+     |      Queue a transform for sending to an external requestor.
      |  
      |  set_state(self, state)
+     |      Set the internal state of the sender. If the state is anything
+     |      other than an empty string, no transforms will be sent. This
+     |      is useful for disabling sending old transforms while an image
+     |      registration or network transfer is in progress.
      |  
      |  start(self)
      |  

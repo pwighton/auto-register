@@ -1,6 +1,3 @@
-"""class to transmit an affine transform over a socket.
-"""
-
 import re
 import struct
 import time
@@ -8,8 +5,20 @@ import time
 from tcpip_server import ThreadedTCPServer
 
 class TransformSender(object):
+    """Sends a transformation to an external computer. At the moment, this
+    transformation is only suitable for use in the Siemens AutoAlign
+    system (or other systems that use a compatible coordinate system).
+
+    This "sender" is actually a TCP server that listens for "ping"
+    requests from an external receiver. When a transform is available
+    to send, the server responds to the ping request by transmitting
+    the transform.
+
+    """
 
     def __init__(self, host, port):
+        """Initialize the networking parameters and internal state.
+        """
         self._host = host
         self._port = port
         self._server = None
@@ -26,12 +35,24 @@ class TransformSender(object):
         self._server = server
 
     def set_state(self, state):
+        """Set the internal state of the sender. If the state is anything
+        other than an empty string, no transforms will be sent. This
+        is useful for disabling sending old transforms while an image
+        registration or network transfer is in progress.
+
+        """
         self._state = state
 
     def clear_state(self):
+        """Set the interal state to an empty string (allowing transformations
+        to be sent).
+
+        """
         self._state = ""
 
     def send(self, transform):
+        """Queue a transform for sending to an external requestor.
+        """
 
         if not self._server.is_running():
             print "Transform sender not running, can't send."
@@ -48,6 +69,13 @@ class TransformSender(object):
         return True
 
     def process_data(self, sock):
+        """Callback when a "ping" request is received. This checks that the
+        request bytes are actually "ping", and replies with the string
+        "none" if there are no transforms queued for sending, and
+        otherwise sends the first transform available.
+
+        """
+
         in_bytes = sock.recv(4096)
 
         def send_string(data):
@@ -80,8 +108,6 @@ class TransformSender(object):
             print "Error sending transform"
         else:
             print "Transmitted transform string"
-
-
 
     def stop(self):
         if self._server is not None:

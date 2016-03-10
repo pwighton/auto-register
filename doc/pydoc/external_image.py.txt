@@ -11,27 +11,46 @@ CLASSES
         ExternalImage
     
     class ExternalImage(__builtin__.object)
+     |  Datastructure representing an image that has been sent to us by an
+     |  external sending application, usually an MRI scanner or test tool
+     |  simulating one.
+     |  
      |  Methods defined here:
      |  
      |  __init__(self, typename, format_def=[('magic', '5s'), ('headerVersion', 'i'), ('seriesUID', '64s'), ('scanType', '64s'), ('imageType', '16s'), ('note', '256s'), ('dataType', '16s'), ('isLittleEndian', '?'), ('isMosaic', '?'), ('pixelSpacingReadMM', 'd'), ('pixelSpacingPhaseMM', 'd'), ('pixelSpacingSliceMM', 'd'), ('sliceGapMM', 'd'), ('numPixelsRead', 'i'), ('numPixelsPhase', 'i'), ('numSlices', 'i'), ('voxelToWorldMatrix', '16f'), ('repetitionTimeMS', 'i'), ('repetitionDelayMS', 'i'), ('currentTR', 'i'), ...])
+     |      Initialize the image data structure and helper variables.
      |  
      |  create_header(self, img, idx, nt, mosaic)
+     |      Create a default dummy header.
      |  
      |  from_image(self, img, idx, nt, mosaic=True)
+     |      Convert an ExternalImage instance into a header/image pair, both in
+     |      byte strings suitable for sending to an external receiver.
      |  
      |  get_header_size(self)
      |  
      |  get_image_size(self)
      |  
      |  hdr_from_bytes(self, byte_str)
+     |      Unpack a byte string received from an external source and fill in
+     |      the image header info it represents.
      |  
      |  hdr_to_bytes(self, hdr_info)
+     |      Convert the image header data into a string of bytes suitable for
+     |      sending to an external receiver.
      |  
      |  make_img(self, in_bytes)
+     |      Convert a byte string received from an external sender into image
+     |      data.
      |  
      |  process_header(self, in_bytes)
+     |      Convenience function to convert a string of bytes into an image
+     |      header. Performs rudimentary validation on a received byte
+     |      string to make sure it's from a source we recognize.
      |  
      |  process_image(self, in_bytes)
+     |      Convenience function to convert a string of bytes into
+     |      image data. Merely passes through to 'make_img'.
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors defined here:
@@ -49,8 +68,10 @@ CLASSES
 
 FUNCTIONS
     demosaic(mosaic, x, y, z)
+        Convert a mosaic 2D image into a 3D volume
     
     mosaic(data)
+        Convert a 3D volume into a mosaic 2D image
     
     sleep(...)
         sleep(seconds)

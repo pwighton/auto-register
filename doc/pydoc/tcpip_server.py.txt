@@ -15,6 +15,9 @@ CLASSES
         ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer)
     
     class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler)
+     |  Simply passes received data through to the specified callback
+     |  function
+     |  
      |  Methods defined here:
      |  
      |  __init__(self, callback, *args, **keys)
@@ -29,6 +32,9 @@ CLASSES
      |  setup(self)
     
     class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer)
+     |  TCPIP server. Simply spins up on init and spawns a thread to handle
+     |  new connections.
+     |  
      |  Method resolution order:
      |      ThreadedTCPServer
      |      SocketServer.ThreadingMixIn
@@ -149,7 +155,7 @@ CLASSES
 
 FUNCTIONS
     handler_factory(callback)
-    
-    process_data_callback(callback, sock)
+        Standalone function to serve as a callback proxy for spawning a
+        thread to handle a new connection.
 
 

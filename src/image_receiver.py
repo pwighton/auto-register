@@ -47,8 +47,6 @@ class ImageReceiver(object):
         self.filename_stack = []
 
     def stop(self):
-        """Stop listening for incoming images.
-        """
         if self.server is not None:
             self.server.shutdown()
             self.server = None
@@ -56,8 +54,6 @@ class ImageReceiver(object):
         print "Image receiver stopped"
 
     def start(self):
-        """Start the server to listen for incoming images.
-        """
         if self.server is not None and self.server.is_running():
             raise RuntimeError('Server already running')
 
@@ -80,9 +76,6 @@ class ImageReceiver(object):
         return filename
 
     def is_running(self):
-        """Get whether the server is running.
-        """
-
         return self.server.is_running()
 
     def process_data(self, sock):

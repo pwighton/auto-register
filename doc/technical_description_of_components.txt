@@ -133,19 +133,30 @@ Python. It has been tested with Python version 2.7.
 
 *** =auto_register.py=
 
-The top-level file in the Registration module.
+The top-level file in the Registration module. It contains the
+=__main__= entry point, and thus is the file that is executed to run
+the entire Registration module.
 
 #+INCLUDE: pydoc/auto_register.py.txt example
 
 *** =external_image.py=
 
+The data structure to hold an image received from an external
+source.
+
 #+INCLUDE: pydoc/external_image.py.txt example
 
 *** =image_receiver.py=
 
+The helper module that runs a TCP/IP server to listen for incoming
+images from an external computer. When it receives an image, it is
+saved and the filename stored so other modules can request it.
+
 #+INCLUDE: pydoc/image_receiver.py.txt example
 
 *** =registered_image.py=
+
+
 
 #+INCLUDE: pydoc/registered_image.py.txt example
 

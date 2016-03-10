@@ -1,7 +1,7 @@
 Help on module terminal_input:
 
 NAME
-    terminal_input - class to interact with the user through a terminal.
+    terminal_input
 
 FILE
     /home/ohinds/projects/auto_register/src/terminal_input.py
@@ -11,11 +11,21 @@ CLASSES
         TerminalInput
     
     class TerminalInput(__builtin__.object)
+     |  Allow the user to interact with a terminal in sane ways.
+     |  
      |  Methods defined here:
      |  
      |  __init__(self, disabled)
+     |      Perform initialization by setting up threading and setting
+     |      attributes of the terminal to stop echo and exit cannonical
+     |      mode. Setting the disabled flag to True will stop the terminal
+     |      attributes from being set. This is useful for debugging, as
+     |      you can't input sanely to a debugger when the attributes are
+     |      set.
      |  
      |  get_char(self)
+     |      Retrieve the next available character that was input by the user,
+     |      or None if there was no character since the last call.
      |  
      |  run(self)
      |  

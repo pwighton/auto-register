@@ -1,6 +1,3 @@
-"""class to interact with the user through a terminal.
-"""
-
 import fcntl
 import os
 import sys
@@ -8,8 +5,18 @@ import termios
 import threading
 
 class TerminalInput(object):
+    """Allow the user to interact with a terminal in sane ways.
+    """
 
     def __init__(self, disabled):
+        """Perform initialization by setting up threading and setting
+        attributes of the terminal to stop echo and exit cannonical
+        mode. Setting the disabled flag to True will stop the terminal
+        attributes from being set. This is useful for debugging, as
+        you can't input sanely to a debugger when the attributes are
+        set.
+
+        """
 
         self._chars = []
         self._thread = None
@@ -60,7 +67,10 @@ class TerminalInput(object):
         fcntl.fcntl(self._fd, fcntl.F_SETFL, self.oldflags)
 
     def get_char(self):
+        """Retrieve the next available character that was input by the user,
+        or None if there was no character since the last call.
 
+        """
         self._mutex.acquire()
         if len(self._chars) == 0:
             c = None

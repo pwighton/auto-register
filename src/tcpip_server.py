@@ -8,6 +8,9 @@ import threading
 SocketServer.TCPServer.allow_reuse_address = True
 
 class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
+    """Simply passes received data through to the specified callback
+    function
+    """
     def __init__(self, callback, *args, **keys):
         self.callback = callback
         SocketServer.BaseRequestHandler.__init__(self, *args, **keys)
@@ -16,18 +19,22 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         self.callback(self.request)
 
 def handler_factory(callback):
+    """Standalone function to serve as a callback proxy for spawning a
+    thread to handle a new connection.
+
+    """
     def createHandler(*args, **keys):
         return ThreadedTCPRequestHandler(callback,  *args, **keys)
     return createHandler
 
-def process_data_callback(callback, sock):
-    callback(sock)
-
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+    """TCPIP server. Simply spins up on init and spawns a thread to handle
+    new connections.
 
+    """
     def __init__(self, address, callback):
-        SocketServer.TCPServer.__init__(self,
-            address, handler_factory(callback))
+        SocketServer.TCPServer.__init__(
+            self, address, handler_factory(callback))
 
         # Start a thread with the server -- that thread will then start one
         # more thread for each request

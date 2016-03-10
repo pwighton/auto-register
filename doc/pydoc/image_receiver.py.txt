@@ -28,7 +28,6 @@ CLASSES
      |      filename from those available.
      |  
      |  is_running(self)
-     |      Get whether the server is running.
      |  
      |  process_data(self, sock)
      |      Callback to receive image data when it arrives.
@@ -37,10 +36,8 @@ CLASSES
      |      Save a received image to a file.
      |  
      |  start(self)
-     |      Start the server to listen for incoming images.
      |  
      |  stop(self)
-     |      Stop listening for incoming images.
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors defined here:

@@ -11,6 +11,8 @@ import numpy as np
 import string
 
 def mosaic(data):
+    """Convert a 3D volume into a mosaic 2D image
+    """
     x, y, z = data.shape
     n = np.ceil(np.sqrt(z))
     X = np.zeros((n*x, n*y), dtype=data.dtype)
@@ -21,6 +23,8 @@ def mosaic(data):
     return X
 
 def demosaic(mosaic, x, y, z):
+    """Convert a mosaic 2D image into a 3D volume
+    """
     data = np.zeros((x, y, z), dtype=mosaic.dtype)
     x,y,z = data.shape
     n = np.ceil(np.sqrt(z))
@@ -34,6 +38,10 @@ def demosaic(mosaic, x, y, z):
 
 
 class ExternalImage(object):
+    """Datastructure representing an image that has been sent to us by an
+    external sending application, usually an MRI scanner or test tool
+    simulating one.
+    """
 
     # Definition of the Python equivalent of the C++ openheader datastructure.
     # See src/io/RtExternalImageInfo.h
@@ -69,6 +77,8 @@ class ExternalImage(object):
                   ]
 
     def __init__(self, typename, format_def=struct_def):
+        """Initialize the image data structure and helper variables.
+        """
         self.names = []
         fmts = []
         for key, fmt in format_def:
@@ -82,6 +92,10 @@ class ExternalImage(object):
         self.num_bytes = None
 
     def hdr_from_bytes(self, byte_str):
+        """Unpack a byte string received from an external source and fill in
+        the image header info it represents.
+
+        """
         alist = list(self.header_fmt.unpack(byte_str))
         values = []
         for idx, key in enumerate(self.names):
@@ -96,6 +110,10 @@ class ExternalImage(object):
         return self.named_tuple_class._make(tuple(values))
 
     def hdr_to_bytes(self, hdr_info):
+        """Convert the image header data into a string of bytes suitable for
+        sending to an external receiver.
+
+        """
         values = []
         for val in hdr_info._asdict().values():
             if isinstance(val, list):
@@ -105,6 +123,8 @@ class ExternalImage(object):
         return self.header_fmt.pack(*values)
 
     def create_header(self, img, idx, nt, mosaic):
+        """Create a default dummy header.
+        """
         x ,y, z, t = img.shape
         sx, sy, sz, tr = img.get_header().get_zooms()
         affine = img.get_affine().flatten().tolist()
@@ -147,6 +167,10 @@ class ExternalImage(object):
         return self.num_bytes
 
     def from_image(self, img, idx, nt, mosaic=True):
+        """Convert an ExternalImage instance into a header/image pair, both in
+        byte strings suitable for sending to an external receiver.
+
+        """
         hdrinfo = self.create_header(img, idx, nt, mosaic)
         if idx is not None:
             data = img.get_data()[..., idx]
@@ -160,6 +184,10 @@ class ExternalImage(object):
                                                        *data)
 
     def make_img(self, in_bytes):
+        """Convert a byte string received from an external sender into image
+        data.
+
+        """
         h = self.hdr
         if h.dataType != 'int16_t':
             raise ValueError('Unsupported data type: %s' % h.dataType)
@@ -189,6 +217,11 @@ class ExternalImage(object):
         return img
 
     def process_header(self, in_bytes):
+        """Convenience function to convert a string of bytes into an image
+        header. Performs rudimentary validation on a received byte
+        string to make sure it's from a source we recognize.
+
+        """
         magic = struct.unpack('4s', in_bytes[:4])[0]
 
         if magic == 'ERTI' or magic == 'SIMU':
@@ -207,5 +240,9 @@ class ExternalImage(object):
             raise ValueError("Unknown magic number %s" % magic)
 
     def process_image(self, in_bytes):
+        """Convenience function to convert a string of bytes into
+        image data. Merely passes through to 'make_img'.
+
+        """
         self.img = self.make_img(in_bytes)
         return self.img
