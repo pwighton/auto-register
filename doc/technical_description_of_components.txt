@@ -66,13 +66,57 @@ Program, e.g.
 
 ** Protocol
 
+*** Experiment to determine sequence parameters
+
 Early in the AutoRegister project, a series of test scans was
 conducted to determine a set of protocol parameters appropriate to act
-as a scout.
+as a scout. During these experiments a subject was scanned to simulate
+two scan sessions: they were removed from the MRI scanner halfway
+through the scan and repositioned as if they were being scanned in a
+second session.
 
-TODO describe the experiment and results
+In each "session", several candidate scout images were acquired with
+different pulse sequence parameters for comparison (see Table 1). In
+addition, several relatively high-resolution MPRAGE images were
+acquired to serve as ground truth. Images for the subjects
+=ar_scout_param_test_1=, =ar_scout_param_test_3=, and
+=ar_scout_param_test_3=, on which sequence parameter choices were made,
+are located in the directory
+=/autofs/eris/cmet/autoReg/DevScans/DevVolunteers/=
 
-TODO list the protocol parameters
+#+ATTR_LATEX: :caption \caption{Table 1: Pulse sequence parameters that were varied in candidate scout sequences.}
+| Candidate | Voxel size | Matrix size | Acceleration | Acquisition time |
+|-----------+------------+-------------+--------------+------------------|
+|         1 | 4 mm^3     |          64 |            0 |                  |
+|         2 | 4 mm^3     |          64 |            2 |                  |
+|         3 | 4 mm^3     |          64 |            3 |                  |
+|         4 | 4 mm^3     |          64 |            4 |                  |
+|         5 | 2 mm^3     |         128 |            0 |                  |
+|         6 | 2 mm^3     |         128 |            2 |                  |
+|         7 | 2 mm^3     |         128 |            3 |                  |
+|         8 | 2 mm^3     |         128 |            4 |                  |
+|         9 | 1.33 mm^3  |         192 |            2 |                  |
+|        10 | 1.33 mm^3  |         192 |            3 |                  |
+|        11 | 1.33 mm^3  |         192 |            4 |                  |
+
+These data were analyzed by coregistering corresponding candidate and
+ground truth scans across sessions using =mri_robust_register=. The
+residual registration error compared to the ground truth was computed
+for each candidate scout using =lta_diff=. A summary of the residual
+registration error for each subject is contained in the file
+=Registration/summary.txt=. Based on this experiment, we decided to ....TODO
+
+#+ATTR_LATEX: :caption \caption{Figure 1}
+[[./figures/subj2_scout_test.png]]
+
+For one subject, =nu_correct= was used to correct intensity
+non-uniformities prior to registration. No substantial difference in
+residual error was observed, so the decision was made to forgo
+=nu_correct=.
+
+*** Protocol parameters
+
+TODO
 
 * Registration module
 
