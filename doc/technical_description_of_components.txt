@@ -131,6 +131,32 @@ to load a transformation from an LTA file.
 The source code for the Registration module is written in
 Python. It has been tested with Python version 2.7.
 
+*** High-level description
+
+The main file, =auto_register.py=, controls operation of the
+AutoRegister Registration module. It is executed from the command line
+while in the python environment described above. It's main duty is to
+configure an instance of the =AutoRegister= class and to execute it's
+main loop.
+
+In the main loop of the =AutoRegister= class, four operations are
+carried out. First, a class member instance of =ImageReceiver= is
+queried to check if new images are available from the MRI scanner or
+simulator. Second, if a new image is available, it is either saved as
+the reference image for registration with subsequent images, or it is
+taken as subsequent image that is registered with the reference image
+using a newly created instance of the =RegisteredImage= class. Third,
+once the registration is completed, a class member instance of
+=TransformSender= is notified that a new transformation is ready. This
+transformation is sent when a request is made for it from an external
+client. Fourth, a member instance of =TerminalInput= is queried to
+determine if a new character has been entered by the user. If so, and
+if this character is 'q', the main loop exits.
+
+The sections below give a high-level description of each source file
+and list the output of the =pydoc= Python source code documentation
+generation tool.
+
 *** =auto_register.py=
 
 The top-level file in the Registration module. It contains the
@@ -142,7 +168,8 @@ the entire Registration module.
 *** =external_image.py=
 
 The data structure to hold an image received from an external
-source.
+source. Adapted from code originally developed by Satra Ghosh for the
+MURFI project.
 
 #+INCLUDE: pydoc/external_image.py.txt example
 
@@ -151,24 +178,42 @@ source.
 The helper module that runs a TCP/IP server to listen for incoming
 images from an external computer. When it receives an image, it is
 saved and the filename stored so other modules can request it.
+Adapted from code originally developed by Satra Ghosh for the MURFI
+project.
 
 #+INCLUDE: pydoc/image_receiver.py.txt example
 
 *** =registered_image.py=
 
-
+The helper module that calls out to the external registration program
+(=mri_robust_register=) and parses the resulting transformation
+file. It makes both the filename and an affine matrix representation
+available to other modules.
 
 #+INCLUDE: pydoc/registered_image.py.txt example
 
 *** =tcpip_server.py=
 
+A simple, generic TCP/IP server. This is used by both ImageReceiver
+and TransformSender to send and receive data from the MRI scanner or
+simulator. Adapted from code originally developed by Satra Ghosh for
+the MURFI project.
+
 #+INCLUDE: pydoc/tcpip_server.py.txt example
 
 *** =terminal_input.py=
 
+The helper module that allows sane user input. At the moment, this
+module is only used to listen for a shutdown signal.
+
 #+INCLUDE: pydoc/terminal_input.py.txt example
 
 *** =transform_sender.py=
+
+The helper module that sends transformation data to the MRI scanner or
+simulator. It runs a TCP/IP server that listens for "ping" requests
+from the external client, and sends a transformation on receiving a
+ping only if there are any transformations in the send queue.
 
 #+INCLUDE: pydoc/transform_sender.py.txt example
 
