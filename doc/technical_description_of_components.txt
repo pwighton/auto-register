@@ -36,6 +36,17 @@ produced for Phase One of the AutoRegister grant. The accompanying
 document =workflow.md= describes the installation and operation of the
 AutoRegister system.
 
+The AutoRegister system contains three software modules. The Scout MRI
+pulse sequence module runs on the MRI scanner and is responsible for
+playing out the RF pulse sequence that acquires the scout image for
+registration. The Reconstruction module is Python software running on
+a laptop external to the MRI system and is responsible for computing
+transformations based on images received from the scanner, and sending
+these transforms back to the scanner. The MR image reconstruction
+module runs on the scanner, reconstructs the scout image, sends it to
+the Registration module, listens for the transformation sent back, and
+makes it available for future scans in the session.
+
 * Scout MRI pulse sequence
 
 The AutoRegister Scout MRI pulse sequence is needed to acquire an
@@ -87,26 +98,28 @@ are located in the directory
 #+ATTR_LATEX: :caption \caption{Table 1: Pulse sequence parameters that were varied in candidate scout sequences.}
 | Candidate | Voxel size | Matrix size | Acceleration | Acquisition time |
 |-----------+------------+-------------+--------------+------------------|
-|         1 | 4 mm^3     |          64 |            0 |                  |
-|         2 | 4 mm^3     |          64 |            2 |                  |
-|         3 | 4 mm^3     |          64 |            3 |                  |
-|         4 | 4 mm^3     |          64 |            4 |                  |
-|         5 | 2 mm^3     |         128 |            0 |                  |
-|         6 | 2 mm^3     |         128 |            2 |                  |
-|         7 | 2 mm^3     |         128 |            3 |                  |
-|         8 | 2 mm^3     |         128 |            4 |                  |
-|         9 | 1.33 mm^3  |         192 |            2 |                  |
-|        10 | 1.33 mm^3  |         192 |            3 |                  |
-|        11 | 1.33 mm^3  |         192 |            4 |                  |
+|         1 | 1.33 mm^3  |         192 |            2 | TODO             |
+|         2 | 1.33 mm^3  |         192 |            3 |                  |
+|         3 | 1.33 mm^3  |         192 |            4 |                  |
+|         4 | 2 mm^3     |         128 |            0 |                  |
+|         5 | 2 mm^3     |         128 |            2 |                  |
+|         6 | 2 mm^3     |         128 |            3 |                  |
+|         7 | 2 mm^3     |         128 |            4 |                  |
+|         8 | 4 mm^3     |          64 |            0 |                  |
+|         9 | 4 mm^3     |          64 |            2 |                  |
+|        10 | 4 mm^3     |          64 |            3 |                  |
+|        11 | 4 mm^3     |          64 |            4 |                  |
 
 These data were analyzed by coregistering corresponding candidate and
 ground truth scans across sessions using =mri_robust_register=. The
 residual registration error compared to the ground truth was computed
 for each candidate scout using =lta_diff=. A summary of the residual
 registration error for each subject is contained in the file
-=Registration/summary.txt=. Based on this experiment, we decided to ....TODO
+=Registration/summary.txt=. Based on this experiment, we decided to
+use candidate (5), as it has relatively low error (about 0.8 mm for
+the subject shown in Figure 2), and a reasonable acquisition time.
 
-#+ATTR_LATEX: :caption \caption{Figure 1}
+#+ATTR_LATEX: :caption \caption{Comparison of the residual registration error of the candidate scout sequences.} :width 4in
 [[./figures/subj2_scout_test.png]]
 
 For one subject, =nu_correct= was used to correct intensity
