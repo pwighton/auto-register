@@ -47,6 +47,9 @@ module runs on the scanner, reconstructs the scout image, sends it to
 the Registration module, listens for the transformation sent back, and
 makes it available for future scans in the session.
 
+#+ATTR_LATEX: :caption \caption{Communication diagram showing the data passed between modules.} :width 4in
+[[./figures/communication_diagram.png]]
+
 * Scout MRI pulse sequence
 
 The AutoRegister Scout MRI pulse sequence is needed to acquire an
