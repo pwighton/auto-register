@@ -59,15 +59,15 @@ same patient.
 
 ** Repository
 
-TODO
+=git@52.72.193.62:ohinds/auto_register_sequence.git=
 
 ** Details
 
 The AutoRegister scout pulse sequence is based directly off of the
 gradient echo pulse sequence distributed by Siemens under the name
 =a_gre=. The scout has been successfully tested on Siemens baselines
-VB17A_???????? and VD13C_20121124. A scout for baseline
-VE11B_20150530 is under development.
+VB17A_20190307 and VD13C_20121124. A scout for baseline VE11B_20150530
+is under development.
 
 For each platform version, the only change that needs to be made from
 the Siemens default pulse sequence is to change the ICE program
@@ -132,7 +132,11 @@ residual error was observed, so the decision was made to forgo
 
 *** Protocol parameters
 
-TODO
+The AutoRegister Scout captures images with a 3D gradient echo
+sequence with a TE of 3.82ms, a TR of 7.9ms, a flip angle of 25
+degrees, an isotropic voxel size of 2mm, and an acquisition matrix
+size of 128x128 with 128 slices. With a GRAPPA acceleration factor of
+2, this sequence takes TODO TIME to acquire.
 
 * Registration module
 
@@ -144,7 +148,7 @@ transformation back to the Image reconstruction module.
 
 ** Repository
 
-TODO
+=git@52.72.193.62:ohinds/auto_register.git=
 
 ** Environment
 
@@ -305,6 +309,6 @@ TODO
 
 ** Repository
 
-TODO
+=git@52.72.193.62:ohinds/ice_auto_register_interface.git=
 
 ** Details
