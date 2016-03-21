@@ -305,10 +305,54 @@ argument.
 
 TODO
 
-* MR image Reconstruction module
+* MR Image reconstruction module
+
+The MR Image reconstruction module reconstructs the raw k-space data
+from the MRI scanner into the AutoRegister Scout image, sends this
+image to the Registration module, listens for a transformation in
+response, and makes the transformation available for application to
+future scans through the Siemens AutoAlign system.
 
 ** Repository
 
 =git@52.72.193.62:ohinds/ice_auto_register_interface.git=
 
 ** Details
+
+The image reconstruction module is implemented as an ICE functor
+called IceAutoRegisterInterface. This functor's two main
+responsibilities are to send an AutoRegister Scout to the Registration
+module, and to receive and pass on a resulting transformation.
+
+*** Image sending
+
+The image sending functionality in the IceAutoRegisterInterface is
+based on the VSend functor, which was developed to send EPI volumes to
+a real-time fMRI system. VSend was in turn based on the SendExternal
+Siemens example program.
+
+The IceAutoRegisterInterface builds up a volume slice-by-slice, each
+time the functor method =ComputeImage= is called. The last time
+=ComputeImage= is called (just after the last slice is acquired), the
+functor adds the final slice to the volume and sends the volume over a
+TCP/IP socket to the server running in the Registration module.
+
+*** Transformation handling
+
+After an image is sent, a wait loop is entered where a "ping" response
+is sent to the Registration module every second. While the response
+"registering" is received, the loop continues. When a string
+containing a free text version of a 4x4 matrix representation of an
+affine transformation is received, the transformation is saved, and
+=ComputeImage= is allowed to proceed.
+
+The transformation is passed along to the Siemens AutoAlign system in
+the functor method =foreignDllCall=, which is called after
+=ComputeImage= returns. All that's required here is to copy the
+received transformation into a data structure provided by the
+AutoAlign system, and passed into =foreignDllCall=.
+
+If this process completes without error, the Registration
+module-computed transformation will be available for application to
+further sequence protocols on the scanner host by choosing the
+AutoAlign -> Head Brain option in the AutoAlign setup.
