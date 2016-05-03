@@ -59,7 +59,7 @@ same patient.
 
 ** Repository
 
-=git@52.72.193.62:ohinds/auto_register_sequence.git=
+=git@git.corticometrics.com:ohinds/auto_register_sequence.git=
 
 ** Details
 
@@ -148,7 +148,7 @@ transformation back to the Image reconstruction module.
 
 ** Repository
 
-=git@52.72.193.62:ohinds/auto_register.git=
+=git@git.corticometrics.com:ohinds/auto_register.git=
 
 ** Environment
 
@@ -315,7 +315,7 @@ future scans through the Siemens AutoAlign system.
 
 ** Repository
 
-=git@52.72.193.62:ohinds/ice_auto_register_interface.git=
+=git@git.corticometrics.com:ohinds/ice_auto_register_interface.git=
 
 ** Details
 
