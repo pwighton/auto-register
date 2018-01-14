@@ -62,6 +62,7 @@ be applied on the scanner host to subsequent diagnostic scans.
 * Start the SDE
 * Change to the AutoRegisterScout sequence using `cs`, then choosing
   AutoRegisterScout
+* Register the `.so` and `.dll` targets by executing `regtarg`
 * Build the sequence using the `ms` command
 * Copy the files
   `n4\x86\prod\bin\AutoRegisterScout.dll` and
