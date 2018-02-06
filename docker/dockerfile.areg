@@ -1,0 +1,5 @@
+FROM python:2.7.14-jessie
+
+RUN pip install nibabel numpy
+
+COPY mri_robust_register /usr/local/bin/mri_robust_register
