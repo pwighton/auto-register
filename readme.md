@@ -39,7 +39,7 @@
     - launch areg, pointing to this dir
       - `docker run -it --rm \
            -v /home/paul/lcn/git/areg/auto_register:/areg \
-           -v /tmp/areg-data:/tmp/areg-data
+           -v /tmp/areg-data:/tmp/areg-data \
            -w /areg \
            -u ${UID} \
            -p 15000:15000 \
