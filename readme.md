@@ -37,14 +37,14 @@
     - create a directory to store the session data
       - `mkdir -p /tmp/areg-data/test-subject`
     - launch areg, pointing to this dir
-      - `docker run -it --rm \
+      - ```docker run -it --rm \
            -v /home/paul/lcn/git/areg/auto_register:/areg \
            -v /tmp/areg-data:/tmp/areg-data \
            -w /areg \
            -u ${UID} \
            -p 15000:15000 \
            -p 15001:15001 \
-           areg /areg/src/auto_register.py -s /tmp/areg-data/test-subject -f -H 127.0.0.1`
+           areg /areg/src/auto_register.py -s /tmp/areg-data/test-subject -f -H 127.0.0.1```
   - If this is a repeat session
     -
 
