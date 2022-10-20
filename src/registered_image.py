@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 """Register two images by calling out to a helper executable (default
 is mri_robust_register). The resulting transformation is read from the
