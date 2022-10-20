@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 """Receive images sent to a TCP server. Also save the images and make
 the filename available through an external interface.
@@ -12,6 +12,7 @@ import os
 import sys
 from time import sleep
 import threading
+import subprocess
 
 from tcpip_server import ThreadedTCPServer
 
@@ -33,6 +34,7 @@ class ImageReceiver(object):
         self.port = args.port
         self.server = None
 
+        self.synthstrip = args.synthstrip
         self.save_location = args.save_directory
         self.save_volume_index = 0
 
@@ -122,11 +124,45 @@ class ImageReceiver(object):
         """Save a received image to a file.
         """
 
-        filename = os.path.join(self.save_location,
-                                'img-%05d.nii.gz' % self.save_volume_index)
-        img.to_filename(filename)
-        self.save_volume_index += 1
-        return filename
+        if self.synthstrip:
+          filename_raw = os.path.join(self.save_location,
+                                  'img-%05d_raw.nii.gz' % self.save_volume_index)
+          filename_synthstrip = os.path.join(self.save_location,
+                                  'img-%05d.nii.gz' % self.save_volume_index)
+          img.to_filename(filename_raw)
+          ## Call mri_synthstrip
+          cmd = ['mri_synthstrip',
+                 '-i', filename_raw,
+                 '-o', filename_synthstrip
+                ]
+          if self._verbose:
+              print ' '.join(cmd)
+
+          try:
+              synthstrip_proc = subprocess.Popen(cmd,
+                                          stdout=subprocess.PIPE,
+                                          stderr=subprocess.PIPE)
+              out, err = synthstrip_proc.communicate()
+
+              if synthstrip_proc.returncode == 0:
+                  with open('synthstrip.log', 'w') as log:
+                      log.write(out)
+              else:
+                  print "Failure executing command:"
+                  print cmd
+                  print err
+                  return False
+              self.save_volume_index += 1
+          except(OSError):
+              print ("Error executing subprocess for synthstrip")
+              raise
+          return filename_synthstrip
+        else:
+          filename = os.path.join(self.save_location,
+                                  'img-%05d.nii.gz' % self.save_volume_index)
+          img.to_filename(filename)
+          self.save_volume_index += 1
+          return filename
 
 def parse_args(args):
     """Parse command line arguments.

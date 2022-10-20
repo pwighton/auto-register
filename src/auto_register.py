@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 """Main file and class for the autoregister application.
 """
@@ -150,6 +150,9 @@ def main(args):
     parser.add_argument('-T', '--no-terminal', action='store_true',
                         help='Do not listen for terminal input (helpful '
                         'for debugging)')
+    parser.add_argument('-s', '--synthstrip', action='store_true',
+                        default=False,
+                        help='Run mri_synthstrip on incomming niftis (mri_synthstrip must be in $PATH)')
 
     ar = AutoRegister(parser.parse_args())
     ar.run()
