@@ -131,12 +131,12 @@ class ImageReceiver(object):
                                   'img-%05d.nii.gz' % self.save_volume_index)
           img.to_filename(filename_raw)
           ## Call mri_synthstrip
+          ## TODO: implement verbosity?
           cmd = ['mri_synthstrip',
                  '-i', filename_raw,
                  '-o', filename_synthstrip
                 ]
-          if self._verbose:
-              print ' '.join(cmd)
+          print ' '.join(cmd)
 
           try:
               synthstrip_proc = subprocess.Popen(cmd,
