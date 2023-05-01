@@ -16,7 +16,7 @@ class TransformSender(object):
 
     """
 
-    def __init__(self, host, port):
+    def __init__(self, host, port, init_transform):
         """Initialize the networking parameters and internal state.
         """
         self._host = host
@@ -24,6 +24,9 @@ class TransformSender(object):
         self._server = None
         self._transforms_to_send = []
         self._state = ""
+        if init_transform is not None:
+          self._transforms_to_send.append(init_transform)
+          self.clear_state()
 
     def start(self):
         if self._server is not None and self._server.is_running():

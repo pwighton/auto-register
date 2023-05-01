@@ -23,8 +23,8 @@ class AutoRegister(object):
             raise ValueError("Environment check failed")
 
         # validate args
-        if args.reference is None and not args.first:
-            raise ValueError("One of --reference or --first must be set")
+        if args.reference is None and not args.first and args.transform is None:
+            raise ValueError("One of --reference, --first or --transform must be set")
         elif args.reference is not None and args.first:
             raise ValueError("Both --reference and --first cannot be set")
 
@@ -35,11 +35,13 @@ class AutoRegister(object):
         self._should_shutdown = False
 
         self._image_receiver = ImageReceiver(args)
-        self._transform_sender = TransformSender(args.host, 15001)
+        self._transform_sender = TransformSender(args.host, 15001, args.transform)
         self._term_input = TerminalInput(disabled=args.no_terminal)
 
         self._last_transform = None
         self._resend_mode = args.resend
+        if args.transform is not None:
+          self._resend_mode = True
 
     def check_for_input(self):
         """Return the last character input, or None. If 'q' is seen, the
@@ -61,6 +63,9 @@ class AutoRegister(object):
         self._term_input.start()
 
         print "Running AutoRegister, 'q' to quit"
+        if len(self._transform_sender._transforms_to_send) > 0:
+          print "Will manually send the following transform: "
+          print "  ", self._transform_sender._transforms_to_send[0]
 
         while not self._should_shutdown:
 
@@ -153,6 +158,9 @@ def main(args):
     parser.add_argument('-syn', '--synthstrip', action='store_true',
                         default=False,
                         help='Run mri_synthstrip on incomming niftis (mri_synthstrip must be in $PATH)')
+    parser.add_argument('-trans', '--transform', type=str,
+                        help='Manually specify a transformation matrix to send to scanner (string with 16 floats)',
+                        default=None)
 
     ar = AutoRegister(parser.parse_args())
     ar.run()
