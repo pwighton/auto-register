@@ -28,7 +28,7 @@ def demosaic(mosaic, x, y, z):
     data = np.zeros((x, y, z), dtype=mosaic.dtype)
     x,y,z = data.shape
     n = np.ceil(np.sqrt(z))
-    dim = np.sqrt(np.prod(mosaic.shape))
+    dim = int(np.sqrt(np.prod(mosaic.shape)))
     mosaic = mosaic.reshape(dim, dim)
     for idx in range(z):
         x_idx = int(np.floor(idx/n)) * x
@@ -194,10 +194,10 @@ class ExternalImage(object):
 
         data = struct.unpack('%dH' % (self.num_bytes / 2), in_bytes)
         if h.isMosaic:
-            data = demosaic(np.array(data), h.numPixelsRead,
+            data = demosaic(np.array(data, dtype=np.short), h.numPixelsRead,
                             h.numPixelsPhase, h.numSlices)
         else:
-            data = np.array(data).reshape((h.numPixelsRead, h.numPixelsPhase,
+            data = np.array(data, dtype=np.short).reshape((h.numPixelsRead, h.numPixelsPhase,
                                            h.numSlices))
             data = np.swapaxes(data, 0, 2)
 
