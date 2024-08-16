@@ -7,11 +7,30 @@ import argparse
 import os
 import sys
 import traceback
+import numpy as np
 
 from image_receiver import ImageReceiver
 from registered_image import RegisteredImage
 from transform_sender import TransformSender
 from terminal_input import TerminalInput
+
+def string_to_np4x4(string_of_floats):
+    if string_of_floats is None:
+        return None
+    float_strings = string_of_floats.split()
+    float_values = [float(x) for x in float_strings]
+    if len(float_values) != 16:
+        raise ValueError("Input string must contain exactly 16 float values")
+    np_4x4 = np.array(float_values).reshape(4, 4)
+    return np_4x4
+
+def np4x4_to_string(array):
+    # convert to string (the dumb way)
+    string = ''
+    for r in xrange(4):
+        for c in xrange(4):
+            string += "%0.9f " % array[r][c]
+    return string
 
 class AutoRegister(object):
 
@@ -38,6 +57,10 @@ class AutoRegister(object):
         self._transform_sender = TransformSender(args.host, 15001, args.transform)
         self._term_input = TerminalInput(disabled=args.no_terminal)
 
+        self._prescription_transform = string_to_np4x4(args.prescription)
+        if self._prescription_transform is not None:
+            print "Prescription matrix has been defined.  All registrations will be multiplied by"
+            print self._prescription_transform
         self._last_transform = None
         self._resend_mode = args.resend
         if args.transform is not None:
@@ -95,8 +118,20 @@ class AutoRegister(object):
                         print "Registering %s to the reference" % filename
                         if reg_image.register():
                             print "Registration complete"
-
-                            self._last_transform = reg_image.get_transform()
+                            print "Registration Transform:"
+                            print reg_image.get_transform()
+                            
+                            # If --prescription was defined, multiply the registration with the prescription
+                            if self._prescription_transform is None:
+                                self._last_transform = reg_image.get_transform()
+                            else:
+                                print "Prescription Transform:"
+                                print self._prescription_transform
+                                reg_img_transform = string_to_np4x4(reg_image.get_transform())
+                                last_transform = np.matmul(reg_img_transform, self._prescription_transform)
+                                self._last_transform = np4x4_to_string(last_transform)
+                            print "Transform to send to scanner:"
+                            print string_to_np4x4(self._last_transform)
                             send_last_transform()
 
             self._transform_sender.clear_state()
@@ -146,9 +181,9 @@ def main(args):
                         'that registration each time a new image is received '
                         '(useful for minimizing the time impact of persistent '
                         'timeout-based image recon errors)')
-    parser.add_argument('-H', '--host', default='192.168.2.5',
+    parser.add_argument('-H', '--host', default='0.0.0.0',
                         help='Address of the scanner from which to listen '
-                        'for images [localhost]')
+                        'for images [0.0.0.0]')
     parser.add_argument('-p', '--port', default=15000, type=int,
                         help='On the scanner address from which to listen '
                         'for images [15000]')
@@ -161,8 +196,12 @@ def main(args):
     parser.add_argument('-trans', '--transform', type=str,
                         help='Manually specify a transformation matrix to send to scanner (string with 16 floats)',
                         default=None)
-
-    ar = AutoRegister(parser.parse_args())
+    parser.add_argument('-prescrip', '--prescription', type=str,
+                        help='Specify a prescription matrix (string with 16 floats; LPS) Registration matrix will be multiplied by this matrix (M_regsiter * M_prescription) and the result will be sent to the scanner')
+    
+    args = parser.parse_args()
+    print "Command line args: ", args
+    ar = AutoRegister(args)
     ar.run()
     return 0
 
