@@ -14,10 +14,23 @@ from registered_image import RegisteredImage
 from transform_sender import TransformSender
 from terminal_input import TerminalInput
 
+def read_np4x4_from_file(filename):
+  floats = []
+  with open(filename, 'r') as file:
+    for line in file:
+        values = line.split()
+        floats.extend(values)
+        if len(floats) >= 16:
+            break
+  return ' '.join(floats[:16])
+
 def string_to_np4x4(string_of_floats):
     if string_of_floats is None:
         return None
-    float_strings = string_of_floats.split()
+    if os.path.isfile(string_of_floats):
+        float_strings = read_np4x4_from_file(string_of_floats).split()
+    else:
+        float_strings = string_of_floats.split()
     float_values = [float(x) for x in float_strings]
     if len(float_values) != 16:
         raise ValueError("Input string must contain exactly 16 float values")
@@ -197,7 +210,7 @@ def main(args):
                         help='Manually specify a transformation matrix to send to scanner (string with 16 floats)',
                         default=None)
     parser.add_argument('-prescrip', '--prescription', type=str,
-                        help='Specify a prescription matrix (string with 16 floats; LPS) Registration matrix will be multiplied by this matrix (M_regsiter * M_prescription) and the result will be sent to the scanner')
+                        help='Specify a prescription matrix (text file with 16 floats; LPS) Registration matrix will be multiplied by this matrix (M_regsiter * M_prescription) and the result will be sent to the scanner')
     
     args = parser.parse_args()
     print "Command line args: ", args
