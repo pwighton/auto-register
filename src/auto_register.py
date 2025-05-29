@@ -8,6 +8,7 @@ import os
 import sys
 import traceback
 import numpy as np
+import signal
 
 from image_manager import ImageManager
 from registered_image import RegisteredImage
@@ -20,6 +21,10 @@ class AutoRegister(object):
     def __init__(self, args):
         """Initialize the autoregister application and helper modules.
         """
+        # Set up signal handler for graceful shutdown
+        signal.signal(signal.SIGINT, self._signal_handler)
+        signal.signal(signal.SIGTERM, self._signal_handler)
+        
         # validate environment
         if not RegisteredImage.check_environment():
             raise ValueError("Environment check failed")
@@ -49,6 +54,11 @@ class AutoRegister(object):
         if args.transform is not None:
             self._resend_mode = True
 
+    def _signal_handler(self, signum, frame):
+        """Handle interrupt signals (Ctrl+C) gracefully."""
+        print "\nReceived interrupt signal, shutting down gracefully..."
+        self.shutdown()
+        
     def check_for_input(self):
         """Return the last character input, or None. If 'q' is seen, the
         autoregister application shuts down.
@@ -197,9 +207,18 @@ def main(args):
     
     args = parser.parse_args()
     print "Command line args: ", args
-    ar = AutoRegister(args)
-    ar.run()
-    return 0
+    
+    try:
+      ar = AutoRegister(args)
+      ar.run()
+      return 0
+    except KeyboardInterrupt:
+        print "\nInterrupted by user"
+        return 1
+    except Exception as e:
+        print "Error: %s" % str(e)
+        traceback.print_exc()
+        return 1
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
