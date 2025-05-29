@@ -10,6 +10,7 @@ from collections import namedtuple
 import glob
 import os
 import sys
+import struct
 from time import sleep
 import threading
 import subprocess
@@ -47,6 +48,7 @@ class ImageReceiver(object):
 
         self.mutex = threading.Lock()
         self.filename_stack = []
+        self.expect_preheader = args.expect_preheader
 
     def stop(self):
         if self.server is not None:
@@ -83,6 +85,20 @@ class ImageReceiver(object):
     def process_data(self, sock):
         """Callback to receive image data when it arrives.
         """
+        if (self.expect_preheader):
+            # PW 2023/12/06: The first 8 bytes are the size of the header and then size of the data..
+            sizes_buf = sock.recv(8)
+            header_size, data_size = struct.unpack('<ii', sizes_buf)
+            print "header_size: %d" % header_size
+            print "data_size: %d" % data_size
+
+            if header_size != self.ei.get_header_size():
+                raise ValueError(
+                  "Expecting a header size of %d, but vsend wants to send %d" %
+                  (self.ei.get_header_size(), header_size)
+                )
+        else:
+            print("Not expecting a pre-header, reading the header")
 
         in_bytes = sock.recv(self.ei.get_header_size())
 

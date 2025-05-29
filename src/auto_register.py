@@ -211,6 +211,10 @@ def main(args):
                         default=None)
     parser.add_argument('-prescrip', '--prescription', type=str,
                         help='Specify a prescription matrix (text file with 16 floats; LPS) Registration matrix will be multiplied by this matrix (M_regsiter * M_prescription) and the result will be sent to the scanner')
+    parser.add_argument('--expect-preheader', action='store_true', default=True,
+                        help='Expect vsend to send an 8-byte preheader (default: True)')
+    parser.add_argument('--no-expect-preheader', action='store_false', dest='expect_preheader',
+                        help='Do not expect vsend to send an 8-byte preheader')
     
     args = parser.parse_args()
     print "Command line args: ", args
