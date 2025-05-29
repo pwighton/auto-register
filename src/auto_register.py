@@ -9,41 +9,11 @@ import sys
 import traceback
 import numpy as np
 
-from image_receiver import ImageReceiver
+from image_manager import ImageManager
 from registered_image import RegisteredImage
 from transform_sender import TransformSender
 from terminal_input import TerminalInput
-
-def read_np4x4_from_file(filename):
-  floats = []
-  with open(filename, 'r') as file:
-    for line in file:
-        values = line.split()
-        floats.extend(values)
-        if len(floats) >= 16:
-            break
-  return ' '.join(floats[:16])
-
-def string_to_np4x4(string_of_floats):
-    if string_of_floats is None:
-        return None
-    if os.path.isfile(string_of_floats):
-        float_strings = read_np4x4_from_file(string_of_floats).split()
-    else:
-        float_strings = string_of_floats.split()
-    float_values = [float(x) for x in float_strings]
-    if len(float_values) != 16:
-        raise ValueError("Input string must contain exactly 16 float values")
-    np_4x4 = np.array(float_values).reshape(4, 4)
-    return np_4x4
-
-def np4x4_to_string(array):
-    # convert to string (the dumb way)
-    string = ''
-    for r in xrange(4):
-        for c in xrange(4):
-            string += "%0.9f " % array[r][c]
-    return string
+from np4x4_utils import *
 
 class AutoRegister(object):
 
@@ -66,7 +36,7 @@ class AutoRegister(object):
 
         self._should_shutdown = False
 
-        self._image_receiver = ImageReceiver(args)
+        self._image_manager = ImageManager(args)
         self._transform_sender = TransformSender(args.host, 15001, args.transform)
         self._term_input = TerminalInput(disabled=args.no_terminal)
 
@@ -77,7 +47,7 @@ class AutoRegister(object):
         self._last_transform = None
         self._resend_mode = args.resend
         if args.transform is not None:
-          self._resend_mode = True
+            self._resend_mode = True
 
     def check_for_input(self):
         """Return the last character input, or None. If 'q' is seen, the
@@ -94,7 +64,7 @@ class AutoRegister(object):
     def run(self):
         """Main loop of the autoregister application.
         """
-        self._image_receiver.start()
+        self._image_manager.start()
         self._transform_sender.start()
         self._term_input.start()
 
@@ -106,7 +76,7 @@ class AutoRegister(object):
         while not self._should_shutdown:
 
             self._transform_sender.set_state("checking")
-            filename = self._image_receiver.get_next_filename()
+            filename = self._image_manager.get_next_filename()
             if filename is not None:
                 if self._reference is None: # need a reference
                     self._reference = filename
@@ -161,7 +131,7 @@ class AutoRegister(object):
         print "Shuting down"
         self._should_shutdown = True
         self._term_input.stop()
-        self._image_receiver.stop()
+        self._image_manager.stop()
         self._transform_sender.stop()
 
 def main(args):
@@ -194,6 +164,15 @@ def main(args):
                         'that registration each time a new image is received '
                         '(useful for minimizing the time impact of persistent '
                         'timeout-based image recon errors)')
+    parser.add_argument('--input-mode', choices=['socket', 'directory'], 
+                        default='socket',
+                        help='Input mode: socket (TCP) or directory (monitor for DICOM files) [socket]')
+    parser.add_argument('--watch-directory', type=verifyDirExists,
+                        help='Directory to monitor for DICOM files (required when input-mode=directory)')
+    parser.add_argument('--poll-interval', type=float, default=2.0,
+                        help='Seconds between directory scans when in directory mode [2.0]')
+    parser.add_argument('--stabilize-wait', type=float, default=2.0,
+                        help='Seconds to wait for file size to stabilize before processing when in directory mode [2.0]')
     parser.add_argument('-H', '--host', default='0.0.0.0',
                         help='Address of the scanner from which to listen '
                         'for images [0.0.0.0]')
@@ -214,7 +193,7 @@ def main(args):
     parser.add_argument('--expect-preheader', action='store_true', default=True,
                         help='Expect vsend to send an 8-byte preheader (default: True)')
     parser.add_argument('--no-expect-preheader', action='store_false', dest='expect_preheader',
-                        help='Do not expect vsend to send an 8-byte preheader')
+                        help='Do not expect vsend to send an 8-byte preheader when in socket mode')
     
     args = parser.parse_args()
     print "Command line args: ", args
