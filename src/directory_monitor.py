@@ -42,6 +42,24 @@ class DirectoryMonitor(object):
         # Initialize known files (ignore existing files at startup)
         self._scan_existing_files()
     
+    def check_environment(self):
+        """Make sure that our environment is able to execute dcm2niix
+        """
+        cmd = ['dcm2niix']
+        try:
+            check_proc = subprocess.Popen(cmd,
+                                          stdout=subprocess.PIPE,
+                                          stderr=subprocess.PIPE)
+            out, err = check_proc.communicate()
+            if (check_proc.returncode == 0 ):
+                return True
+            else:
+                print "Unexpected output while executing %s" % cmd
+                return False
+        except(OSError):
+            print "Can't find %s, make sure it's in the $PATH?" % cmd
+            return False
+
     def _scan_existing_files(self):
         """Scan directory for existing DICOM files to ignore at startup."""
         print "Scanning existing DICOM files to ignore..."

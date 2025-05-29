@@ -27,7 +27,7 @@ class AutoRegister(object):
         
         # validate environment
         if not RegisteredImage.check_environment():
-            raise ValueError("Environment check failed")
+            raise ValueError("RegisteredImage Environment check failed")
 
         # validate args
         if args.reference is None and not args.first and args.transform is None:
@@ -42,6 +42,12 @@ class AutoRegister(object):
         self._should_shutdown = False
 
         self._image_manager = ImageManager(args)
+
+        # If the image manager is looking for dicoms in a dir, dcm2niix needs to be
+        # in PATH
+        if not self._image_manager.check_environment():
+          raise ValueError("ImageManager Environment check failed")
+
         self._transform_sender = TransformSender(args.host, 15001, args.transform)
         self._term_input = TerminalInput(disabled=args.no_terminal)
 

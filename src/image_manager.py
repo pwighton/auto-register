@@ -33,3 +33,9 @@ class ImageManager(object):
     def is_running(self):
         """Check if receiver is running."""
         return self.receiver.is_running()
+
+    def check_environment(self):
+        if self.input_mode == 'directory':
+            return self.receiver.check_environment()
+        else:
+            return True
