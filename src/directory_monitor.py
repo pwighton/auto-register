@@ -5,6 +5,7 @@ Monitors a directory for new DICOM files and converts them to NIfTI.
 """
 
 import os
+import sys
 import glob
 import time
 import subprocess
@@ -180,17 +181,28 @@ class DirectoryMonitor(object):
         try:
             print "Processing DICOM: %s" % dicom_path
             
-            # Create temporary directory for dcm2niix output
+            # Create temporary directory for dcm2niix operation since it is not
+            # possible to specify a specific dicom file for dcm2niix to convert
             temp_dir = tempfile.mkdtemp(prefix='dcm2niix_')
             
             try:
-                # Run dcm2niix
+                # Copy the DICOM file to temporary directory
+                dicom_filename = os.path.basename(dicom_path)
+                temp_dicom_path = os.path.join(temp_dir, dicom_filename)
+                
+                # Use shutil.copy2 to preserve metadata
+                copy_cmd = "cp '%s' '%s'" % (dicom_path, temp_dicom_path)
+                print "Running: %s" % copy_cmd
+                shutil.copy2(dicom_path, temp_dicom_path)
+                print "Successfully copied DICOM to temporary directory"
+                
+                # Run dcm2niix on the temporary directory containing just this one file
                 cmd = [
                     'dcm2niix',
-                    '-o', temp_dir,  # output directory
+                    '-o', temp_dir,  # output to same temp directory
                     '-f', 'converted',  # output filename prefix
                     '-z', 'y',  # compress output
-                    dicom_path
+                    temp_dir  # input directory (not the file path)
                 ]
                 
                 print "Running: %s" % ' '.join(cmd)
@@ -216,6 +228,8 @@ class DirectoryMonitor(object):
                             'img-%05d.nii.gz' % self.save_volume_index
                         )
                         
+                        move_cmd = "mv '%s' '%s'" % (temp_nifti, output_filename)
+                        print "Running: %s" % move_cmd
                         shutil.move(temp_nifti, output_filename)
                         self.save_volume_index += 1
                         
@@ -239,10 +253,15 @@ class DirectoryMonitor(object):
                 
             finally:
                 # Clean up temporary directory
+                cleanup_cmd = "rm -rf '%s'" % temp_dir
+                print "Running: %s" % cleanup_cmd
+                sys.stdout.flush()
                 shutil.rmtree(temp_dir, ignore_errors=True)
                 
         except Exception as e:
             print "ERROR processing DICOM file %s: %s" % (dicom_path, str(e))
+            import traceback
+            traceback.print_exc()
         
         finally:
             # Remove from processing set
