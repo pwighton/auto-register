@@ -12,7 +12,14 @@ import subprocess
 import threading
 import tempfile
 import shutil
+import json
 from collections import defaultdict
+
+# Import pydicom (works with both old and new versions)
+try:
+    import pydicom
+except ImportError:
+    import dicom as pydicom
 
 class DirectoryMonitor(object):
     """Monitor a directory for new DICOM files, convert to NIfTI, and make
@@ -26,6 +33,11 @@ class DirectoryMonitor(object):
         self.poll_interval = getattr(args, 'poll_interval', 2.0)
         self.stabilize_wait = getattr(args, 'stabilize_wait', 3.0)
         
+        # Load DICOM filter if specified
+        self.dicom_filter = None
+        if hasattr(args, 'dicom_filter') and args.dicom_filter:
+            self._load_dicom_filter(args.dicom_filter)
+            
         # Thread control
         self.mutex = threading.Lock()
         self.filename_stack = []
@@ -42,7 +54,56 @@ class DirectoryMonitor(object):
         
         # Initialize known files (ignore existing files at startup)
         self._scan_existing_files()
-    
+
+    def _load_dicom_filter(self, filter_path):
+        """Load DICOM filter criteria from JSON file."""
+        try:
+            with open(filter_path, 'r') as f:
+                self.dicom_filter = json.load(f)
+            print "Loaded DICOM filter from %s" % filter_path
+            print "Filter criteria:"
+            for key, value in self.dicom_filter.items():
+                print "  %s: %s" % (key, value)
+        except Exception as e:
+            print "ERROR loading DICOM filter from %s: %s" % (filter_path, str(e))
+            raise
+
+    def _check_dicom_filter(self, dicom_path):
+        """Check if DICOM file matches filter criteria."""
+        if self.dicom_filter is None:
+            return True  # No filter, accept all files
+
+        try:
+            # Read DICOM file
+            ds = pydicom.dcmread(dicom_path, stop_before_pixels=True)
+
+            # Check each filter criterion
+            for tag_name, expected_value in self.dicom_filter.items():
+                # Get the actual value from the DICOM dataset
+                if hasattr(ds, tag_name):
+                    actual_value = getattr(ds, tag_name)
+
+                    # Convert to string for comparison if needed
+                    if hasattr(actual_value, 'value'):
+                        actual_value = actual_value.value
+
+                    # Compare values (convert to string for consistent comparison)
+                    if str(actual_value) != str(expected_value):
+                        print "DICOM filter mismatch for %s:" % dicom_path
+                        print "  %s: expected '%s', got '%s'" % (tag_name, expected_value, actual_value)
+                        return False
+                else:
+                    print "DICOM filter: tag '%s' not found in %s" % (tag_name, dicom_path)
+                    return False
+
+            # All criteria matched
+            print "DICOM file %s matches all filter criteria" % dicom_path
+            return True
+
+        except Exception as e:
+            print "ERROR reading DICOM file %s for filtering: %s" % (dicom_path, str(e))
+            return False
+
     def check_environment(self):
         """Make sure that our environment is able to execute dcm2niix
         """
@@ -137,17 +198,23 @@ class DirectoryMonitor(object):
         
         for filepath in new_files:
             if self._is_file_stable(filepath):
-                # File is stable, start processing
-                self.processing_files.add(filepath)
-                self.known_files.add(filepath)
-                
-                # Process in separate thread to avoid blocking monitoring
-                process_thread = threading.Thread(
-                    target=self._process_dicom_file, 
-                    args=(filepath,)
-                )
-                process_thread.daemon = True
-                process_thread.start()
+                # File is stable, check filter before processing
+                if self._check_dicom_filter(filepath):
+                    # File matches filter (if exists), start processing
+                    self.processing_files.add(filepath)
+                    self.known_files.add(filepath)
+                    
+                    # Process in separate thread to avoid blocking monitoring
+                    process_thread = threading.Thread(
+                        target=self._process_dicom_file, 
+                        args=(filepath,)
+                    )
+                    process_thread.daemon = True
+                    process_thread.start()
+                else:
+                    # File doesn't match filter, mark as known but don't process
+                    self.known_files.add(filepath)
+                    print "Ignoring DICOM file %s (does not match filter)" % filepath
 
     def _is_file_stable(self, filepath):
         """Check if file size has stabilized (file write is complete)."""

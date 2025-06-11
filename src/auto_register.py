@@ -189,6 +189,8 @@ def main(args):
                         help='Seconds between directory scans when in directory mode [2.0]')
     parser.add_argument('--stabilize-wait', type=float, default=2.0,
                         help='Seconds to wait for file size to stabilize before processing when in directory mode [2.0]')
+    parser.add_argument('--dicom-filter', type=verifyPathExists,
+                        help='JSON file containing DICOM tag/value pairs to filter incoming files (directory mode only)')
     parser.add_argument('-H', '--host', default='0.0.0.0',
                         help='Address of the scanner from which to listen '
                         'for images [0.0.0.0]')
