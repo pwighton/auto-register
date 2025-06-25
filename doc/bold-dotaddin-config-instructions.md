@@ -1,4 +1,6 @@
-1) On the auto-register computer, Determine the user that will be used to run auto-register, and log in as that user
+# BOLD dot addin configuration instructions
+
+1) On the auto-register computer, determine the user that will be used to run auto-register, and log in as that user
 
 - This user needs to be able to run `sudo`
 - In this example, the user will be called `paul`
@@ -91,3 +93,5 @@ On the scanner, add the BOLD dot-addin to the desired BOLD sequence, and configu
 - Target Directory: \BOLD_DICOM (the directory used in step #4)
 - User Name: WORKGROUP\paul (the user from step #1)
 - Password: paul123 (the password from step #3)
+
+10) Run a sequence with the BOLD dot-addin.  The DICOMs should appear in the `\BOLD_DICOM` folder of the auto-register computer once the scan completes.
