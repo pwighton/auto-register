@@ -37,7 +37,7 @@ sudo chmod -R 773 /BOLD_DICOM
 
 5) Configure samba 
 
-- Edit the included `smb.conf` file and change the `path` from `/BOLD_DICOM` to the directory chosen in step #4
+- Edit the included [`smb.conf`](smb.conf) file and change the `path` from `/BOLD_DICOM` to the directory chosen in step #4
 - Backup your current `smb.conf` file and replace it with the `smb.conf` in this bundle
 
 ```
