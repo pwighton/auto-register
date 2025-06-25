@@ -40,7 +40,7 @@ pip install -r ./requirements.txt
 4) Determine how data will be transfered to the auto-register computer
 
 - If using vsend, Install and configure the [VSend ICE functor](https://github.com/pwighton/VSend) on your Seimens scanner
-- If using the DICOM export option of the Seimens BOLD dot addin, [configure the BOLD dot addin](doc/bold-dotaddin-installation-instructions.md) on your Seimens scanner
+- If using the DICOM export option of the Seimens BOLD dot addin, [configure the BOLD dot addin](doc/bold-dotaddin-config-instructions.md) on your Seimens scanner
 
 ## Run
 
@@ -99,7 +99,7 @@ src/auto_register.py \
   --watch-directory /BOLD_DICOM
 ```
 
-- `--watch-directory /BOLD_DICOM` should correspond to the directory the bold dot addin has been configured for (step #4 in the [BOLD dot addin configuration instructions](doc/bold-dotaddin-installation-instructions.md))
+- `--watch-directory /BOLD_DICOM` should correspond to the directory the bold dot addin has been configured for (step #4 in the [BOLD dot addin configuration instructions](doc/bold-dotaddin-config-instructions.md))
 
 The Bold dot addin transfer method assumes a 1-to-1 mapping between dicoms files and image volumes (i.e. 3d scans).  It's ok if a single sequence generates multiple volumes, as long as the 1-to-1 mapping between dicom files and volumes hold.  Use the `--dicom-filter` flag and point it to a json file to filter out volumes you'd like autoregsiter to ignore.  For example the, the json file [`dicom-filters/memprage-rms.json`](dicom-filters/memprage-rms.json) can be used to filter out all but the RMS volume of a multi-echo MPRAGE sequence.  Note: this filter assumes the sequence is named "MEMPRAGE_4mm_scout" on the scanner.  Edit accordingly.
 
