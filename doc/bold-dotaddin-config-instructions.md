@@ -38,7 +38,7 @@ sudo chmod -R 773 /BOLD_DICOM
 5) Configure samba 
 
 - Edit the included [`smb.conf`](smb.conf) file and change the `path` from `/BOLD_DICOM` to the directory chosen in step #4
-- Backup your current `smb.conf` file and replace it with the `smb.conf` in this bundle
+- Backup your current `smb.conf` file and replace it with the `smb.conf` in this repo
 
 ```
 sudo cp /etc/samba/smb.conf /etc/samba/smb.conf.backup.20250113
@@ -90,8 +90,8 @@ should give something like:
 On the scanner, add the BOLD dot-addin to the desired BOLD sequence, and configure:
 
 - Target host: `\\192.168.2.5` (the IP used in step #6)
-- Target Directory: \BOLD_DICOM (the directory used in step #4)
-- User Name: WORKGROUP\paul (the user from step #1)
-- Password: paul123 (the password from step #3)
+- Target Directory: `\BOLD_DICOM` (the directory used in step #4)
+- User Name: `WORKGROUP\paul` (the user from step #1)
+- Password: `paul123` (the password from step #3)
 
 10) Run a sequence with the BOLD dot-addin.  The DICOMs should appear in the `\BOLD_DICOM` folder of the auto-register computer once the scan completes.
