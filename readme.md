@@ -14,8 +14,10 @@ After the AutoAlign matrix has been set by the [IceAASetter ICE functor](https:/
   - FreeSurfer.  Any version will do as long as it has
     - [mri_robust_register](https://surfer.nmr.mgh.harvard.edu/fswiki/mri_robust_register)
     - [mri_synthstrip](https://surfer.nmr.mgh.harvard.edu/docs/synthstrip/) if using the `--synthstrip` flag.
-  - Samba if using the DICOM export option from the Seimens BOLD dot addin (`--input-mode directory`)
   - Git
+  - If using the DICOM export option from the Seimens BOLD dot addin (`--input-mode directory`)
+    - [Samba](https://www.samba.org/) 
+    - [dcm2niix](https://github.com/rordenlab/dcm2niix)
 
 ## Installation
 
