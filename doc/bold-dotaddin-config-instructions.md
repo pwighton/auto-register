@@ -85,6 +85,8 @@ should give something like:
 	IPC$            IPC       IPC Service (Samba 4.15.13-Ubuntu)
 ```
 
+If you see something saying `SMB1 disabled -- no workgroup available` you can safely disregard.
+
 9) Configure the BOLD dot-addin accordingly
 
 On the scanner, add the BOLD dot-addin to the desired BOLD sequence, and configure:
