@@ -2,7 +2,6 @@
 
 """Receive images sent to a TCP server. Also save the images and make
 the filename available through an external interface.
-
 """
 
 import argparse
