@@ -51,6 +51,11 @@ class DirectoryMonitor(object):
         
         # Counter for output filenames
         self.save_volume_index = 0
+
+        # find existing volumes so we don't overwrite them
+        existing = glob.glob(os.path.join(
+            self.save_location, "img-[0-9][0-9][0-9][0-9][0-9].nii.gz"))
+        self.save_volume_index = len(existing)
         
         # Initialize known files (ignore existing files at startup)
         self._scan_existing_files()
