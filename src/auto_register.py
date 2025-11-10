@@ -30,11 +30,13 @@ class AutoRegister(object):
         if not RegisteredImage.check_environment():
             raise ValueError("RegisteredImage Environment check failed")
 
-        # validate args
-        if args.reference is None and not args.first and args.transform is None:
-            raise ValueError("One of --reference, --first or --transform must be set")
-        elif args.reference is not None and args.first:
-            raise ValueError("Both --reference and --first cannot be set")
+        # validate args (skip reference check if default registration is disabled)
+        disable_default_areg = getattr(args, 'disable_default_areg', False)
+        if not disable_default_areg:
+            if args.reference is None and not args.first and args.transform is None:
+                raise ValueError("One of --reference, --first or --transform must be set")
+            elif args.reference is not None and args.first:
+                raise ValueError("Both --reference and --first cannot be set")
 
         self._reference = args.reference
         if self._reference is not None:
