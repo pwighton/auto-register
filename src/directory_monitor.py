@@ -37,7 +37,13 @@ class DirectoryMonitor(object):
         self.dicom_filter = None
         if hasattr(args, 'dicom_filter') and args.dicom_filter:
             self._load_dicom_filter(args.dicom_filter)
-            
+
+        # Load command/filter pairs if specified
+        self.command_filter_pairs = []
+        if hasattr(args, 'command_filter_pairs') and args.command_filter_pairs:
+            self.command_filter_pairs = args.command_filter_pairs
+            self._load_command_filters()
+
         # Thread control
         self.mutex = threading.Lock()
         self.filename_stack = []
@@ -72,6 +78,32 @@ class DirectoryMonitor(object):
         except Exception as e:
             print "ERROR loading DICOM filter from %s: %s" % (filter_path, str(e))
             raise
+
+    def _load_command_filters(self):
+        """Load filter criteria for each command from JSON files."""
+        loaded_pairs = []
+        for i, (command, filter_path) in enumerate(self.command_filter_pairs):
+            filter_dict = None
+            if filter_path is not None:
+                try:
+                    with open(filter_path, 'r') as f:
+                        filter_dict = json.load(f)
+                    print "Loaded filter for command %d from %s" % (i, filter_path)
+                    print "  Command: %s" % command
+                    print "  Filter criteria:"
+                    for key, value in filter_dict.items():
+                        print "    %s: %s" % (key, value)
+                except Exception as e:
+                    print "ERROR loading command filter from %s: %s" % (filter_path, str(e))
+                    raise
+            else:
+                print "Command %d has no filter (will run on all DICOM files)" % i
+                print "  Command: %s" % command
+
+            loaded_pairs.append((command, filter_dict))
+
+        # Replace the list with loaded filters
+        self.command_filter_pairs = loaded_pairs
 
     def _check_dicom_filter(self, dicom_path):
         """Check if DICOM file matches filter criteria."""
@@ -108,6 +140,82 @@ class DirectoryMonitor(object):
         except Exception as e:
             print "ERROR reading DICOM file %s for filtering: %s" % (dicom_path, str(e))
             return False
+
+    def _check_command_filter(self, dicom_path, filter_dict):
+        """Check if DICOM file matches a command-specific filter."""
+        if filter_dict is None:
+            return True  # No filter, accept all files
+
+        try:
+            # Read DICOM file
+            ds = pydicom.dcmread(dicom_path, stop_before_pixels=True)
+
+            # Check each filter criterion
+            for tag_name, expected_value in filter_dict.items():
+                # Get the actual value from the DICOM dataset
+                if hasattr(ds, tag_name):
+                    actual_value = getattr(ds, tag_name)
+
+                    # Convert to string for comparison if needed
+                    if hasattr(actual_value, 'value'):
+                        actual_value = actual_value.value
+
+                    # Compare values (convert to string for consistent comparison)
+                    if str(actual_value) != str(expected_value):
+                        return False
+                else:
+                    return False
+
+            # All criteria matched
+            return True
+
+        except Exception as e:
+            print "ERROR reading DICOM file %s for command filtering: %s" % (dicom_path, str(e))
+            return False
+
+    def _execute_commands(self, dicom_path, nifti_path):
+        """Execute arbitrary commands for DICOM/NIfTI pair."""
+        if not self.command_filter_pairs:
+            return  # No commands configured
+
+        for i, (command, filter_dict) in enumerate(self.command_filter_pairs):
+            # Check if DICOM matches this command's filter
+            if not self._check_command_filter(dicom_path, filter_dict):
+                print "Command %d filter does not match, skipping" % i
+                continue
+
+            # Execute the command with dicom_path and nifti_path as positional arguments
+            try:
+                cmd_parts = command.split()
+                full_cmd = cmd_parts + [dicom_path, nifti_path]
+
+                print "Executing command %d: %s" % (i, ' '.join(full_cmd))
+
+                proc = subprocess.Popen(
+                    full_cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE
+                )
+                stdout, stderr = proc.communicate()
+
+                # Log the results
+                print "Command %d completed with exit code: %d" % (i, proc.returncode)
+
+                if stdout:
+                    print "Command %d stdout:" % i
+                    print stdout
+
+                if stderr:
+                    print "Command %d stderr:" % i
+                    print stderr
+
+                if proc.returncode != 0:
+                    print "WARNING: Command %d failed with exit code %d" % (i, proc.returncode)
+
+            except Exception as e:
+                print "ERROR executing command %d: %s" % (i, str(e))
+                import traceback
+                traceback.print_exc()
 
     def check_environment(self):
         """Make sure that our environment is able to execute dcm2niix
@@ -311,7 +419,10 @@ class DirectoryMonitor(object):
                         self.mutex.acquire()
                         self.filename_stack.append(output_filename)
                         self.mutex.release()
-                        
+
+                        # Execute arbitrary commands if configured
+                        self._execute_commands(dicom_path, output_filename)
+
                     elif len(nifti_files) == 0:
                         print "ERROR: dcm2niix did not produce any NIfTI files for %s" % dicom_path
                         print "stdout: %s" % stdout

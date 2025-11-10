@@ -9,6 +9,7 @@ import sys
 import traceback
 import numpy as np
 import signal
+import shutil
 
 from image_manager import ImageManager
 from registered_image import RegisteredImage
@@ -40,6 +41,7 @@ class AutoRegister(object):
             print "Using reference: %s" % self._reference
 
         self._should_shutdown = False
+        self._disable_default_areg = getattr(args, 'disable_default_areg', False)
 
         self._image_manager = ImageManager(args)
 
@@ -94,7 +96,10 @@ class AutoRegister(object):
             self._transform_sender.set_state("checking")
             filename = self._image_manager.get_next_filename()
             if filename is not None:
-                if self._reference is None: # need a reference
+                if self._disable_default_areg:
+                    # Default autoregistration is disabled, just report the file
+                    print "Received file: %s (default autoregistration disabled)" % filename
+                elif self._reference is None: # need a reference
                     self._reference = filename
                     print "Using reference: %s" % filename
                 else: # register
@@ -119,7 +124,7 @@ class AutoRegister(object):
                             print "Registration complete"
                             print "Registration Transform:"
                             print reg_image.get_transform()
-                            
+
                             # If --prescription was defined, multiply the registration with the prescription
                             if self._prescription_transform is None:
                                 self._last_transform = reg_image.get_transform()
@@ -191,6 +196,12 @@ def main(args):
                         help='Seconds to wait for file size to stabilize before processing when in directory mode [2.0]')
     parser.add_argument('--dicom-filter', type=verifyPathExists,
                         help='JSON file containing DICOM tag/value pairs to filter incoming files (directory mode only)')
+    parser.add_argument('--command', action='append', dest='commands',
+                        help='Arbitrary command to execute when a new DICOM is detected (can be specified multiple times)')
+    parser.add_argument('--command-filter', action='append', type=verifyPathExists, dest='command_filters',
+                        help='JSON file containing DICOM tag/value pairs to filter for corresponding --command (can be specified multiple times)')
+    parser.add_argument('--disable-default-areg', action='store_true',
+                        help='Disable the default behavior of calling mri_robust_register')
     parser.add_argument('-H', '--host', default='0.0.0.0',
                         help='Address of the scanner from which to listen '
                         'for images [0.0.0.0]')
@@ -215,7 +226,43 @@ def main(args):
     
     args = parser.parse_args()
     print "Command line args: ", args
-    
+
+    # Validate incompatible flag combinations
+    if args.disable_default_areg and args.dicom_filter is not None:
+        raise ValueError("--disable-default-areg and --dicom-filter cannot be used together")
+
+    # Pair up commands with filters
+    command_filter_pairs = []
+    if args.commands is not None:
+        num_commands = len(args.commands)
+        num_filters = len(args.command_filters) if args.command_filters is not None else 0
+
+        for i in range(num_commands):
+            command = args.commands[i]
+            filter_path = args.command_filters[i] if i < num_filters else None
+            command_filter_pairs.append((command, filter_path))
+
+        # Validate that all commands exist
+        for command, _ in command_filter_pairs:
+            # Extract the first token (the actual command/executable)
+            cmd_parts = command.split()
+            if len(cmd_parts) == 0:
+                raise ValueError("Empty command specified")
+
+            executable = cmd_parts[0]
+
+            # Check if it's an absolute path
+            if os.path.isabs(executable):
+                if not os.path.exists(executable):
+                    raise ValueError("Command not found: %s" % executable)
+            else:
+                # Check in PATH
+                if shutil.which(executable) is None:
+                    raise ValueError("Command not found in PATH: %s" % executable)
+
+    # Store the paired commands in args for later use
+    args.command_filter_pairs = command_filter_pairs
+
     try:
       ar = AutoRegister(args)
       ar.run()
