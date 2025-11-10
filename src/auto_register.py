@@ -9,7 +9,7 @@ import sys
 import traceback
 import numpy as np
 import signal
-import shutil
+from distutils.spawn import find_executable
 
 from image_manager import ImageManager
 from registered_image import RegisteredImage
@@ -257,7 +257,7 @@ def main(args):
                     raise ValueError("Command not found: %s" % executable)
             else:
                 # Check in PATH
-                if shutil.which(executable) is None:
+                if find_executable(executable) is None:
                     raise ValueError("Command not found in PATH: %s" % executable)
 
     # Store the paired commands in args for later use
