@@ -1,0 +1,12 @@
+.git
+.gitignore
+*.pyc
+*.pyo
+__pycache__
+*.md
+LICENSE
+.vscode
+.idea
+*.swp
+*.swo
+*~
