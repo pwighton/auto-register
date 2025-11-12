@@ -25,14 +25,14 @@ class AutoRegister(object):
         # Set up signal handler for graceful shutdown
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
-        
-        # validate environment
-        if not RegisteredImage.check_environment():
-            raise ValueError("RegisteredImage Environment check failed")
 
-        # validate args (skip reference check if default registration is disabled)
         disable_default_areg = getattr(args, 'disable_default_areg', False)
+
+        # validate environment and args (skip checks if default registration is disabled)
         if not disable_default_areg:
+            if not RegisteredImage.check_environment():
+                raise ValueError("RegisteredImage Environment check failed")
+
             if args.reference is None and not args.first and args.transform is None:
                 raise ValueError("One of --reference, --first or --transform must be set")
             elif args.reference is not None and args.first:
