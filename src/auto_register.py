@@ -28,8 +28,11 @@ class AutoRegister(object):
 
         disable_default_areg = getattr(args, 'disable_default_areg', False)
 
-        # validate environment and args (skip checks if default registration is disabled)
-        if not disable_default_areg:
+        # Check if -reg was provided (implies disable_default_areg behavior)
+        has_registration_matrix = args.registration is not None
+
+        # validate environment and args (skip checks if default registration is disabled or -reg is specified)
+        if not disable_default_areg and not has_registration_matrix:
             if not RegisteredImage.check_environment():
                 raise ValueError("RegisteredImage Environment check failed")
 
@@ -59,6 +62,12 @@ class AutoRegister(object):
         if self._prescription_transform is not None:
             print "Prescription matrix has been defined.  All registrations will be multiplied by"
             print self._prescription_transform
+
+        self._registration_transform = string_to_np4x4(args.registration)
+        if self._registration_transform is not None:
+            print "Registration matrix has been defined (mri_robust_register will not be called)."
+            print self._registration_transform
+
         self._last_transform = None
         self._resend_mode = args.resend
         if args.transform is not None:
@@ -101,6 +110,26 @@ class AutoRegister(object):
                 if self._disable_default_areg:
                     # Default autoregistration is disabled, just report the file
                     print "Received file: %s (default autoregistration disabled)" % filename
+                elif self._registration_transform is not None:
+                    # Using provided registration matrix instead of mri_robust_register
+                    self._transform_sender.set_state("registering")
+                    print "Received file: %s (using provided registration matrix)" % filename
+
+                    # Combine with prescription if provided
+                    if self._prescription_transform is None:
+                        self._last_transform = np4x4_to_string(self._registration_transform)
+                    else:
+                        print "Prescription Transform:"
+                        print self._prescription_transform
+                        last_transform = np.matmul(self._registration_transform, self._prescription_transform)
+                        self._last_transform = np4x4_to_string(last_transform)
+
+                    print "Transform to send to scanner:"
+                    print string_to_np4x4(self._last_transform)
+                    if self._transform_sender.send(self._last_transform):
+                        print "Transform ready to send"
+                    else:
+                        print "Failed to prepare transform for sending"
                 elif self._reference is None: # need a reference
                     self._reference = filename
                     print "Using reference: %s" % filename
@@ -221,6 +250,10 @@ def main(args):
                         default=None)
     parser.add_argument('-prescrip', '--prescription', type=str,
                         help='Specify a prescription matrix (text file with 16 floats; LPS) Registration matrix will be multiplied by this matrix (M_regsiter * M_prescription) and the result will be sent to the scanner')
+    parser.add_argument('-reg', '--registration', type=str,
+                        help='Specify a registration matrix (text file with 16 floats; LPS). '
+                        'Uses this matrix instead of running mri_robust_register. '
+                        'If -prescrip is also specified, M_registration * M_prescription is sent to scanner')
     parser.add_argument('--expect-preheader', action='store_true', default=True,
                         help='Expect vsend to send an 8-byte preheader (default: True)')
     parser.add_argument('--no-expect-preheader', action='store_false', dest='expect_preheader',
